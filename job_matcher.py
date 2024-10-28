@@ -1,5 +1,5 @@
 # job_matcher.py
-
+import streamlit as st
 import os
 from langchain_groq import ChatGroq
 from langchain_community.document_loaders import WebBaseLoader
@@ -10,7 +10,7 @@ import pandas as pd
 import chromadb
 import fitz
 from dotenv import load_dotenv
-
+import time
 # Conditional imports for audio functionality
 try:
     import speech_recognition as sr
@@ -142,22 +142,82 @@ def generate_interview_questions(job_posting, resume, num_questions=5):
 
 # Function to conduct the interview
 # Modified conduct_interview function
-def conduct_interview(job_posting, resume):
+def conduct_interview(job_posting, resume, question_container, status_container, response_container, history_container):
     questions = generate_interview_questions(job_posting, resume)
     client = chromadb.PersistentClient('vectorstore')
     collection = client.get_or_create_collection(name="interview_responses")
 
     responses = []
-    for i, question in enumerate(questions, 1):
-        print(f"Question {i}: {question}")
 
-        # Convert question to speech and play it, or just print it
+    # Custom CSS for highlighting current question
+    highlight_css = """
+        <style>
+            .current-question {
+                background-color: #f0f7ff;
+                border-left: 5px solid #0066cc;
+                padding: 1rem;
+                margin: 1rem 0;
+                border-radius: 5px;
+                animation: fadeIn 0.5s;
+                color: #000000;
+            }
+
+            .past-question {
+                padding: 1rem;
+                margin: 1rem 0;
+                border-left: 5px solid #e0e0e0;
+                color: #ffffff;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        </style>
+    """
+
+    st.markdown(highlight_css, unsafe_allow_html=True)
+
+    for i, question in enumerate(questions, 1):
+        # Display the current question with highlighting
+        question_container.markdown(
+            f"""
+            <div class="current-question">
+                <h3>Question {i}/{len(questions)}:</h3>
+                <p>🗣️ {question}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Convert question to speech and play it
         question_audio = text_to_speech(question)
         play_audio(question_audio)
 
+        # Update status to show we're listening
+        status_container.markdown("🎤 Listening for your response...")
+
         # Get the candidate's response
         response = speech_to_text()
-        print(f"Candidate's response: {response}")
+
+        # Display the response
+        response_container.markdown("### Your Response:")
+        response_container.markdown(f"💬 {response}")
+
+        # Add to history with non-highlighted style
+        with history_container:
+            st.markdown(
+                f"""
+                <div class="past-question">
+                    <h4>Question {i}:</h4>
+                    <p>🗣️ {question}</p>
+                    <p><strong>Your Response:</strong></p>
+                    <p>💬 {response}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            st.markdown("---")
 
         # Store the response in the vector database
         collection.add(
@@ -167,6 +227,12 @@ def conduct_interview(job_posting, resume):
         )
 
         responses.append({"question": question, "response": response})
+
+        # Clear current question and response containers for next question
+        time.sleep(2)  # Give user time to read their response
+        question_container.empty()
+        status_container.empty()
+        response_container.empty()
 
     return responses
 
@@ -207,16 +273,13 @@ def evaluate_interview(responses, job_posting, resume):
 
 
 # Core function to process job link and resume
-def process_job_and_resume(job_link: str, resume_pdf: str):
-    # Load job posting from the link
-    loader = WebBaseLoader(job_link)
-    page_data = loader.load().pop().page_content
+def process_job_and_resume(job_profile: str, resume_pdf: str):
 
     # Create prompt for extracting job posting info
     prompt_extract = PromptTemplate.from_template(
         f"""
         ### SCRAPED TEXT FROM WEBSITE:
-        {page_data}
+        {job_profile}
         ### INSTRUCTION:
         The scraped text is from the career's page of a website.
         Your job is to extract the job posting and return them in JSON format containing the following keys: `role`,`experience`,`skills`,`description`.
@@ -226,7 +289,7 @@ def process_job_and_resume(job_link: str, resume_pdf: str):
         """
     )
     chain = prompt_extract | llm
-    response = chain.invoke(input={"page_data": page_data})
+    response = chain.invoke(input={"job_profile": job_profile})
 
     # Parse the job posting JSON
     json_parser = JsonOutputParser()
@@ -236,7 +299,7 @@ def process_job_and_resume(job_link: str, resume_pdf: str):
         print(f"Error parsing JSON: {e}")
         print(f"Response content: {response.content}")
         json_job_posting = {"role": "", "experience": "", "skills": [], "description": ""}
-
+    print(json_job_posting)
     # Handle the case where 'skills' might not be a list
     skills = json_job_posting.get('skills', [])
     if isinstance(skills, str):
