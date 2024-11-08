@@ -6,6 +6,8 @@ from google.auth.transport import requests as google_requests
 import jwt
 import os
 import datetime
+from job_matcher import *
+
 
 load_dotenv()
 
@@ -42,7 +44,7 @@ def generate_jwt_token(user_id):
 @app.route('/login', methods=['POST'])
 def login():
     try:
-        token = request.json.get('credential')
+        token = request.json.get('idToken')
         if not token:
             return jsonify({'error': 'Token missing'}), 400
 
@@ -63,7 +65,7 @@ def login():
 
         jwt_token = generate_jwt_token(user.id)
 
-        return jsonify({'message': 'User logged in successfully', 'user_id': user.id, 'token': jwt_token}), 200
+        return jsonify({'message': 'User logged in successfully', 'user_id': str(user.id), 'token': jwt_token}), 200
 
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
@@ -88,10 +90,21 @@ def token_required(func):
     wrapper.__name__ = func.__name__
     return wrapper
 
-@app.route('/getResumeScore', methods=['GET'])
+@app.route('/processJobAndResume', methods=['GET'])
 @token_required
 def get_resume_score(user_id):
-    return jsonify({'message': f'User {user_id}, your resume score is 85'}), 200
+    try:
+        job_profile = request.json.get("job_profile")
+        resume_pdf = request.json.get("resume_pdf")
+
+        answer, jobPosting, extractedResume = process_job_and_resume(job_profile=job_profile, resume_pdf=resume_pdf)
+
+        return jsonify({answer, jobPosting, extractedResume}), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': 'An error occurred'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
