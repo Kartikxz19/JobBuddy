@@ -1,16 +1,15 @@
-# job_matcher.py
+import chromadb
+from dotenv import load_dotenv
+import fitz
 import streamlit as st
-import os
 from langchain_groq import ChatGroq
-from langchain_community.document_loaders import WebBaseLoader
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-import uuid
+import os
 import pandas as pd
-import chromadb
-import fitz
-from dotenv import load_dotenv
 import time
+import uuid
+
 # Conditional imports for audio functionality
 try:
     import speech_recognition as sr
@@ -25,9 +24,8 @@ load_dotenv()
 llm = ChatGroq(
     model="llama-3.1-70b-versatile",
     temperature=0,
-    groq_api_key=os.getenv("GROQ_API_KEY")
+    groq_api_key=os.getenv("GROQ_API_KEY"),
 )
-
 
 
 # Format JSON to a more readable format
@@ -46,17 +44,18 @@ def format_json(data):
 # Function to fetch questions based on skills
 def get_questions(skills: str):
     df = pd.read_csv("interviewV3.csv")
-    client = chromadb.PersistentClient('vectorstore')
+    client = chromadb.PersistentClient("vectorstore")
     collection = client.get_or_create_collection(name="interview")
 
     if not collection.count():
         for _, row in df.iterrows():
-            collection.add(documents=row["Skills"],
-                           metadatas={"Ques": row["Questions"]},
-                           ids=[str(uuid.uuid4())]
-                           )
+            collection.add(
+                documents=row["Skills"],
+                metadatas={"Ques": row["Questions"]},
+                ids=[str(uuid.uuid4())],
+            )
     data = collection.query(query_texts=[skills], n_results=10)
-    questions = [metadata['Ques'] for metadata in data['metadatas'][0]]
+    questions = [metadata["Ques"] for metadata in data["metadatas"][0]]
     return questions
 
 
@@ -64,7 +63,7 @@ def get_questions(skills: str):
 def text_to_speech(text):
     if AUDIO_AVAILABLE:
         try:
-            tts = gTTS(text=text, lang='en')
+            tts = gTTS(text=text, lang="en")
             fp = io.BytesIO()
             tts.write_to_fp(fp)
             fp.seek(0)
@@ -77,6 +76,7 @@ def text_to_speech(text):
         print(text)
         return None
 
+
 # Modified play_audio function with fallback
 def play_audio(audio_fp):
     if AUDIO_AVAILABLE and audio_fp:
@@ -88,6 +88,7 @@ def play_audio(audio_fp):
                 pygame.time.Clock().tick(10)
         except Exception as e:
             print(f"Error playing audio: {e}")
+
 
 # Function to convert speech to text
 # Modified speech-to-text function with fallback
@@ -110,6 +111,8 @@ def speech_to_text():
             return input("Please type your response: ")
     else:
         return input("Please type your response: ")
+
+
 # Function to generate interview questions
 def generate_interview_questions(job_posting, resume, num_questions=5):
     prompt = PromptTemplate.from_template(
@@ -135,16 +138,29 @@ def generate_interview_questions(job_posting, resume, num_questions=5):
     )
 
     chain = prompt | llm | JsonOutputParser()
-    questions = chain.invoke(input={"job_posting": job_posting, "resume": resume, "num_questions": num_questions})
+    questions = chain.invoke(
+        input={
+            "job_posting": job_posting,
+            "resume": resume,
+            "num_questions": num_questions,
+        }
+    )
 
     return list(questions.values())
 
 
 # Function to conduct the interview
 # Modified conduct_interview function
-def conduct_interview(job_posting, resume, question_container, status_container, response_container, history_container):
+def conduct_interview(
+    job_posting,
+    resume,
+    question_container,
+    status_container,
+    response_container,
+    history_container,
+):
     questions = generate_interview_questions(job_posting, resume)
-    client = chromadb.PersistentClient('vectorstore')
+    client = chromadb.PersistentClient("vectorstore")
     collection = client.get_or_create_collection(name="interview_responses")
 
     responses = []
@@ -187,7 +203,7 @@ def conduct_interview(job_posting, resume, question_container, status_container,
                 <p>🗣️ {question}</p>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
 
         # Convert question to speech and play it
@@ -215,7 +231,7 @@ def conduct_interview(job_posting, resume, question_container, status_container,
                     <p>💬 {response}</p>
                 </div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
             st.markdown("---")
 
@@ -223,7 +239,7 @@ def conduct_interview(job_posting, resume, question_container, status_container,
         collection.add(
             documents=[response],
             metadatas=[{"question": question}],
-            ids=[str(uuid.uuid4())]
+            ids=[str(uuid.uuid4())],
         )
 
         responses.append({"question": question, "response": response})
@@ -267,7 +283,9 @@ def evaluate_interview(responses, job_posting, resume):
     )
 
     chain = prompt | llm
-    evaluation = chain.invoke(input={"job_posting": job_posting, "resume": resume, "responses": responses})
+    evaluation = chain.invoke(
+        input={"job_posting": job_posting, "resume": resume, "responses": responses}
+    )
 
     return evaluation.content
 
@@ -298,12 +316,17 @@ def process_job_and_resume(job_profile: str, resume_pdf: str):
     except Exception as e:
         print(f"Error parsing JSON: {e}")
         print(f"Response content: {response.content}")
-        json_job_posting = {"role": "", "experience": "", "skills": [], "description": ""}
+        json_job_posting = {
+            "role": "",
+            "experience": "",
+            "skills": [],
+            "description": "",
+        }
     print(json_job_posting)
     # Handle the case where 'skills' might not be a list
-    skills = json_job_posting.get('skills', [])
+    skills = json_job_posting.get("skills", [])
     if isinstance(skills, str):
-        skills = [skill.strip() for skill in skills.split(',')]
+        skills = [skill.strip() for skill in skills.split(",")]
     elif not isinstance(skills, list):
         skills = []
 
@@ -345,6 +368,11 @@ def process_job_and_resume(job_profile: str, resume_pdf: str):
     )
 
     chain_final = prompt_final | llm
-    answer = chain_final.invoke(input={"json_job_posting": json_job_posting_formatted, "extracted_resume": extracted_resume})
+    answer = chain_final.invoke(
+        input={
+            "json_job_posting": json_job_posting_formatted,
+            "extracted_resume": extracted_resume,
+        }
+    )
 
     return answer.content, json_job_posting_formatted, extracted_resume

@@ -1,15 +1,12 @@
-# app.py
-import streamlit as st
 from job_matcher import process_job_and_resume, conduct_interview, evaluate_interview
+import streamlit as st
 import os
 
 st.title("Job Application and Interview Process")
-
-# Stage 1: Resume Submission and Job Matching
 st.header("Stage 1: Are you suitable for the job?")
 
 # Initialize session state for job_profile if it doesn't exist
-if 'job_profile' not in st.session_state:
+if "job_profile" not in st.session_state:
     st.session_state.job_profile = ""
 
 # Job Profile input
@@ -37,15 +34,15 @@ if st.button("Submit Resume") and job_profile and resume_file:
     os.remove(resume_path)
 
     # Store the job posting and resume for later use
-    st.session_state['job_posting'] = job_posting
-    st.session_state['resume'] = resume
+    st.session_state["job_posting"] = job_posting
+    st.session_state["resume"] = resume
 
     # Show the "Start Interview" button
-    st.session_state['show_interview_button'] = True
+    st.session_state["show_interview_button"] = True
 
 # Stage 2: Interview
 # app.py - Update the interview section
-if st.session_state.get('show_interview_button', False):
+if st.session_state.get("show_interview_button", False):
     st.header("Stage 2: Interview")
 
     # Create containers for the interview UI
@@ -55,20 +52,24 @@ if st.session_state.get('show_interview_button', False):
     history_container = st.container()
 
     if st.button("Start Interview"):
-        st.write("Starting the interview. Please make sure your microphone is connected and working.")
+        st.write(
+            "Starting the interview. Please make sure your microphone is connected and working."
+        )
 
         with st.spinner("Conducting interview..."):
             responses = conduct_interview(
-                st.session_state['job_posting'],
-                st.session_state['resume'],
+                st.session_state["job_posting"],
+                st.session_state["resume"],
                 question_container,
                 status_container,
                 response_container,
-                history_container
+                history_container,
             )
 
         st.write("Interview completed. Evaluating responses...")
-        evaluation = evaluate_interview(responses, st.session_state['job_posting'], st.session_state['resume'])
+        evaluation = evaluate_interview(
+            responses, st.session_state["job_posting"], st.session_state["resume"]
+        )
 
         st.markdown("### Interview Evaluation:")
         st.markdown(evaluation)
