@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 from google.auth.transport import requests as google_requests
 import jwt
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from job_matcher import *
 import glob
-
+import re
 
 load_dotenv()
 
@@ -33,11 +33,82 @@ class User(db.Model):
         self.email = email
         self.name = name
 
+class Skill(db.Model):
+    __tablename__ = 'skills'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    skill = db.Column(db.String(255), nullable=False)
+    level = db.Column(db.Integer, nullable=False)
+
+class Project(db.Model):
+    __tablename__ = 'projects'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    tech_stack = db.Column(db.String(500), nullable=False)
+    demo_link = db.Column(db.String(500))
+    start_date = db.Column(db.String(7), nullable=False)  # Format: MM/YYYY
+    end_date = db.Column(db.String(7), nullable=False)    # Format: MM/YYYY
+    description = db.Column(db.Text, nullable=False)
+
+class Experience(db.Model):
+    __tablename__ = 'experiences'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    company = db.Column(db.String(255), nullable=False)
+    start_date = db.Column(db.String(7), nullable=False)  # Format: MM/YYYY
+    end_date = db.Column(db.String(7), nullable=False)    # Format: MM/YYYY
+    description = db.Column(db.Text, nullable=False)
+
+class Achievement(db.Model):
+    __tablename__ = 'achievements'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+
+class Education(db.Model):
+    __tablename__ = 'education'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    institution = db.Column(db.String(255), nullable=False)
+    degree = db.Column(db.String(255), nullable=False)
+    start_date = db.Column(db.String(7), nullable=False)  # Format: MM/YYYY
+    end_date = db.Column(db.String(7), nullable=False)    # Format: MM/YYYY
+
+class ProfileLink(db.Model):
+    __tablename__ = 'profile_links'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    platform = db.Column(db.String(255), nullable=False)
+    url = db.Column(db.String(500), nullable=False)
+
+class ContactDetail(db.Model):
+    __tablename__ = 'contact_details'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    type = db.Column(db.String(255), nullable=False)
+    value = db.Column(db.String(255), nullable=False)
+
+# Helper functions
+def parse_date(date_str):
+    """Convert MM/YYYY to month and year dict"""
+    if not re.match(r'^\d{2}/\d{4}$', date_str):
+        raise ValueError("Date must be in MM/YYYY format")
+    month, year = date_str.split('/')
+    return {"month": int(month), "year": int(year)}
+
+def format_date(month, year):
+    """Convert month and year to MM/YYYY format"""
+    return f"{int(month):02d}/{year}"
+
+
 with app.app_context():
     db.create_all()
 
 def generate_jwt_token(user_id):
-    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    expiration_time = datetime.utcnow() + timedelta(hours=24)
     payload = {
         'user_id': user_id,
         'exp': expiration_time
@@ -74,6 +145,7 @@ def login():
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
+        print(str(e))
         return jsonify({'error': 'An error occurred'}), 500
 
 def token_required(func):
@@ -169,6 +241,7 @@ def check_resume_score(user_id):
         print(e)
         return jsonify({'error': 'An internal server error occurred'}), 500
 
+
 @app.route('/getResumeStatus', methods=['GET'])
 @token_required
 def get_resume_status(user_id):
@@ -187,6 +260,150 @@ def get_resume_status(user_id):
     except Exception as e:
         print(e)
         return jsonify({'error': 'An internal server error occurred'}), 500
+    
+
+@app.route('/api/profile', methods=['GET'])
+@token_required
+def get_profile(user_id):
+
+    # Fetch all user data
+    skills = Skill.query.filter_by(user_id=user_id).all()
+    projects = Project.query.filter_by(user_id=user_id).all()
+    experiences = Experience.query.filter_by(user_id=user_id).all()
+    achievements = Achievement.query.filter_by(user_id=user_id).all()
+    education = Education.query.filter_by(user_id=user_id).all()
+    profile_links = ProfileLink.query.filter_by(user_id=user_id).all()
+    contact_details = ContactDetail.query.filter_by(user_id=user_id).all()
+
+    return jsonify({
+        "skills": [{
+            "skill": s.skill,
+            "level": s.level
+        } for s in skills],
+        "projects": [{
+            "name": p.name,
+            "techStack": p.tech_stack,
+            "demoLink": p.demo_link,
+            "startDate": parse_date(p.start_date),
+            "endDate": parse_date(p.end_date),
+            "description": p.description
+        } for p in projects],
+        "experience": [{
+            "title": e.title,
+            "company": e.company,
+            "startDate": parse_date(e.start_date),
+            "endDate": parse_date(e.end_date),
+            "description": e.description
+        } for e in experiences],
+        "achievements": [{
+            "title": a.title,
+            "description": a.description
+        } for a in achievements],
+        "education": [{
+            "institution": e.institution,
+            "degree": e.degree,
+            "startDate": parse_date(e.start_date),
+            "endDate": parse_date(e.end_date)
+        } for e in education],
+        "profileLinks": [{
+            "platform": p.platform,
+            "url": p.url
+        } for p in profile_links],
+        "contactDetails": [{
+            "type": c.type,
+            "value": c.value
+        } for c in contact_details]
+    })
+
+
+@app.route('/api/profile', methods=['PUT'])
+@token_required
+def update_profile(user_id):
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    try:
+        # Start transaction
+        db.session.begin()
+
+        # Delete existing records
+        Skill.query.filter_by(user_id=user_id).delete()
+        Project.query.filter_by(user_id=user_id).delete()
+        Experience.query.filter_by(user_id=user_id).delete()
+        Achievement.query.filter_by(user_id=user_id).delete()
+        Education.query.filter_by(user_id=user_id).delete()
+        ProfileLink.query.filter_by(user_id=user_id).delete()
+        ContactDetail.query.filter_by(user_id=user_id).delete()
+
+        # Insert new records
+        for skill in data.get('skills', []):
+            db.session.add(Skill(
+                user_id=user_id,
+                skill=skill['skill'],
+                level=skill['level']
+            ))
+
+        for project in data.get('projects', []):
+            db.session.add(Project(
+                user_id=user_id,
+                name=project['name'],
+                tech_stack=project['techStack'],
+                demo_link=project['demoLink'],
+                start_date=format_date(project['startDate']['month'], project['startDate']['year']),
+                end_date=format_date(project['endDate']['month'], project['endDate']['year']),
+                description=project['description']
+            ))
+
+        for exp in data.get('experience', []):
+            db.session.add(Experience(
+                user_id=user_id,
+                title=exp['title'],
+                company=exp['company'],
+                start_date=format_date(exp['startDate']['month'], exp['startDate']['year']),
+                end_date=format_date(exp['endDate']['month'], exp['endDate']['year']),
+                description=exp['description']
+            ))
+
+        for achievement in data.get('achievements', []):
+            db.session.add(Achievement(
+                user_id=user_id,
+                title=achievement['title'],
+                description=achievement['description']
+            ))
+
+        for edu in data.get('education', []):
+            db.session.add(Education(
+                user_id=user_id,
+                institution=edu['institution'],
+                degree=edu['degree'],
+                start_date=format_date(edu['startDate']['month'], edu['startDate']['year']),
+                end_date=format_date(edu['endDate']['month'], edu['endDate']['year'])
+            ))
+
+        for link in data.get('profileLinks', []):
+            db.session.add(ProfileLink(
+                user_id=user_id,
+                platform=link['platform'],
+                url=link['url']
+            ))
+
+        for contact in data.get('contactDetails', []):
+            db.session.add(ContactDetail(
+                user_id=user_id,
+                type=contact['type'],
+                value=contact['value']
+            ))
+
+        # Commit transaction
+        db.session.commit()
+        return jsonify({"message": "Profile updated successfully"})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

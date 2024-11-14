@@ -1,3 +1,4 @@
 .env
 resumes/
 venv
+generated_resumes/
