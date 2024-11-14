@@ -1,6 +1,6 @@
 package com.jainhardik120.jobbuddy.data.remote
 
-import android.util.Log
+import android.net.Uri
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -18,14 +18,24 @@ import com.jainhardik120.jobbuddy.data.KeyValueStorage
 import com.jainhardik120.jobbuddy.data.remote.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.remote.dto.LoginResponse
 import com.jainhardik120.jobbuddy.data.remote.dto.MessageError
+import kotlinx.coroutines.flow.Flow
+import io.ktor.client.plugins.onUpload
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 
 class JobBuddyAPIImpl(
     private val client: HttpClient,
-    private val keyValueStorage: KeyValueStorage
+    private val keyValueStorage: KeyValueStorage,
+    private val fileReader: FileReader
 ) : JobBuddyAPI {
 
-    companion object{
+    companion object {
         private const val TAG = "JobBuddyAPIImpl"
     }
 
@@ -75,10 +85,72 @@ class JobBuddyAPIImpl(
     }
 
     override suspend fun loginGoogle(request: GoogleLoginRequest): Result<LoginResponse, MessageError> {
-        Log.d(TAG, "loginGoogle: Call to API")
-        Log.d(TAG, "loginGoogle: ${APIRoutes.LOGIN_ROUTE}")
         return performApiRequest {
             requestBuilder(APIRoutes.LOGIN_ROUTE, HttpMethod.Post, request)
         }
     }
+
+    override suspend fun checkResumeScore(request: ResumeScoreRequest): Result<ResumeScoreResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(APIRoutes.RESUME_SCORE_ROUTE, HttpMethod.Post, request)
+        }
+    }
+
+    override suspend fun getResumeStatus(): Result<ResumeStatusResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                url = APIRoutes.RESUME_STATUS_ROUTE,
+                method = HttpMethod.Get
+            )
+        }
+    }
+
+
+    override fun uploadResume(contentUri: Uri): Flow<ProgressUpdate> = channelFlow {
+        val info = fileReader.uriToFileInfo(contentUri)
+        client.submitFormWithBinaryData(
+            url = APIRoutes.RESUME_UPLOAD_ROUTE,
+            formData = formData {
+                append("resume_file", info.bytes, Headers.build {
+                    append(HttpHeaders.ContentType, info.mimeType)
+                    append(HttpHeaders.ContentDisposition, "filename=${info.name}.pdf")
+                })
+            }
+        ) {
+            tokenAuthHeaders()
+            onUpload { bytesSentTotal, totalBytes ->
+                if (totalBytes != null) {
+                    if (totalBytes > 0L) {
+                        send(ProgressUpdate(bytesSentTotal, totalBytes))
+                    }
+                }
+            }
+        }
+    }
 }
+
+
+@Serializable
+data class ResumeScoreRequest(
+    @SerialName("job_description")
+    val jobDescription: String
+)
+
+@Serializable
+data class ResumeScoreResponse(
+    @SerialName("answer")
+    val message: String,
+    @SerialName("extracted_resume")
+    val resumeText: String,
+    @SerialName("job_posting")
+    val jobDescription: String
+)
+
+@Serializable
+data class ResumeStatusResponse(
+    val message: String,
+    @SerialName("file_path")
+    val filePath: String? = null,
+    @SerialName("upload_time")
+    val uploadTime: String? = null
+)

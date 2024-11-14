@@ -1,4 +1,4 @@
-package com.jainhardik120.jobbuddy.ui.presentation
+package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
 sealed class InputModel(
     var fields: Map<String, InputFieldType>

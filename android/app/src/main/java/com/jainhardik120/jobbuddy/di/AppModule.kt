@@ -5,6 +5,7 @@ import com.jainhardik120.jobbuddy.R
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPIImpl
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
+import com.jainhardik120.jobbuddy.data.remote.FileReader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,7 +44,9 @@ object AppModule {
                 )
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 50000
+                requestTimeoutMillis = 60000 // 1 minute
+                connectTimeoutMillis = 60000 // 1 minute
+                socketTimeoutMillis = 60000  // 1 minute
             }
         }
     }
@@ -63,10 +66,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiImpl(client: HttpClient, keyValueStorage: KeyValueStorage): JobBuddyAPI {
-        return JobBuddyAPIImpl(client, keyValueStorage)
+    fun provideApiImpl(
+        client: HttpClient,
+        keyValueStorage: KeyValueStorage,
+        @ApplicationContext context: Context
+    ): JobBuddyAPI {
+        return JobBuddyAPIImpl(client, keyValueStorage, fileReader = FileReader(context))
     }
-
 
 
 }

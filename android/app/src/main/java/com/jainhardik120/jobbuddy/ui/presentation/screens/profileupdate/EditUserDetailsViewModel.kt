@@ -1,4 +1,4 @@
-package com.jainhardik120.jobbuddy.ui.presentation
+package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf

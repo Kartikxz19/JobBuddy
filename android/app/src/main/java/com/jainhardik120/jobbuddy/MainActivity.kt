@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            JobBuddyTheme {
+            JobBuddyTheme(dynamicColor = false) {
                 App()
             }
         }

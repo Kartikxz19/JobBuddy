@@ -1,4 +1,4 @@
-package com.jainhardik120.jobbuddy.ui.presentation
+package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
 import kotlinx.serialization.Serializable
 import java.util.Calendar

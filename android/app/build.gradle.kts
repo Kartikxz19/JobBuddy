@@ -91,4 +91,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
 
+    implementation("com.github.jeziellago:compose-markdown:0.5.4")
+
+
 }

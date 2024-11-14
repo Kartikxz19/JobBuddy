@@ -21,6 +21,7 @@ except ImportError:
     AUDIO_AVAILABLE = False
 
 load_dotenv()
+
 llm = ChatGroq(
     model="llama-3.1-70b-versatile",
     temperature=0,
