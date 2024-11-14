@@ -8,3 +8,10 @@ data class MessageError(
     @SerialName("error")
     val error:  String
 )
+
+
+@Serializable
+data class MessageResponse(
+    @SerialName("message")
+    val message:  String
+)

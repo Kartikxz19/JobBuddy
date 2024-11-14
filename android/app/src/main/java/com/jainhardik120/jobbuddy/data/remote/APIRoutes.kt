@@ -9,4 +9,5 @@ object APIRoutes {
     const val RESUME_UPLOAD_ROUTE = "$AUTH_BASE_URL/uploadResume"
     const val RESUME_SCORE_ROUTE = "$AUTH_BASE_URL/checkResumeScore"
     const val RESUME_STATUS_ROUTE = "$AUTH_BASE_URL/getResumeStatus"
+    const val PROFILE_ROUTE = "$AUTH_BASE_URL/api/profile"
 }

@@ -33,31 +33,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
-import com.jainhardik120.jobbuddy.ui.presentation.AppRoutes.ProfileUpdateScreen
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.EditUserDetailsEvent
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.EditUserDetailsState
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.EditUserDetailsViewModel
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.InputFieldType
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.InputModel
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.InputType
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.ProfileUpdateScreen
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlin.math.roundToInt
@@ -65,25 +49,25 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
-    val viewModel = hiltViewModel<ApplicationViewModel>()
+    val appViewModel = hiltViewModel<ApplicationViewModel>()
     val navController = rememberNavController()
-    val isLoggedIn = viewModel.isLoggedIn
-//    LaunchedEffect(isLoggedIn) {
-//        if (isLoggedIn) {
-//            navController.popBackStack()
-//            navController.navigate(AppRoutes.HomeScreen.route)
-//        } else {
-//            navController.popBackStack()
-//            navController.navigate(AppRoutes.LoginScreen.route)
-//        }
-//    }
+    val isLoggedIn = appViewModel.isLoggedIn
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            navController.popBackStack()
+            navController.navigate(AppRoutes.HomeScreen.route)
+        } else {
+            navController.popBackStack()
+            navController.navigate(AppRoutes.LoginScreen.route)
+        }
+    }
     NavHost(
-//        navController = navController, startDestination = if (isLoggedIn) {
-//            AppRoutes.HomeScreen.route
-//        } else {
-//            AppRoutes.LoginScreen.route
-//        }
-        navController = navController, startDestination = AppRoutes.HomeScreen.route
+        navController = navController, startDestination = if (isLoggedIn) {
+            AppRoutes.HomeScreen.route
+        } else {
+            AppRoutes.LoginScreen.route
+        }
+//        navController = navController, startDestination = AppRoutes.HomeScreen.route
     ) {
         composable(AppRoutes.LoginScreen.route) {
             LoginScreen()
@@ -137,6 +121,13 @@ fun App() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Button(
+                        onClick = {
+                            appViewModel.logOut()
+                        }
+                    ) {
+                        Text("Logout")
+                    }
                     Button(onClick = {
                         viewModel.checkStatus()
                     }) {
@@ -144,6 +135,13 @@ fun App() {
                     }
                     Button(onClick = {
                         navController.navigate(AppRoutes.ProfileUpdateScreen.route)
+                    }
+
+                    ) {
+                        Text("Take virtual interview")
+                    }
+                    Button(onClick = {
+                        navController.navigate(AppRoutes.VirtualInterviewScreen.route)
                     }
 
                     ) {

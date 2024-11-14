@@ -18,6 +18,7 @@ import com.jainhardik120.jobbuddy.data.KeyValueStorage
 import com.jainhardik120.jobbuddy.data.remote.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.remote.dto.LoginResponse
 import com.jainhardik120.jobbuddy.data.remote.dto.MessageError
+import com.jainhardik120.jobbuddy.data.remote.dto.MessageResponse
 import kotlinx.coroutines.flow.Flow
 import io.ktor.client.plugins.onUpload
 import io.ktor.client.request.forms.formData
@@ -105,6 +106,17 @@ class JobBuddyAPIImpl(
         }
     }
 
+    override suspend fun getProfileDetails(): Result<ProfileDetails, MessageError> {
+        return performApiRequest {
+            requestBuilder(APIRoutes.PROFILE_ROUTE, HttpMethod.Get)
+        }
+    }
+
+    override suspend fun updateProfileDetails(data: ProfileDetails): Result<MessageResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(APIRoutes.PROFILE_ROUTE, HttpMethod.Put, data)
+        }
+    }
 
     override fun uploadResume(contentUri: Uri): Flow<ProgressUpdate> = channelFlow {
         val info = fileReader.uriToFileInfo(contentUri)

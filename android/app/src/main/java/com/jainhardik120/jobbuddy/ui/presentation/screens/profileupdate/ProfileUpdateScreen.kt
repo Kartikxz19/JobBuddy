@@ -25,6 +25,7 @@ import java.util.Calendar
 fun ProfileUpdateScreen(
     state: EditUserDetailsState, onEvent: (EditUserDetailsEvent) -> Unit
 ) {
+
     LazyColumn {
         profileSection(
             dataList = state.skills,

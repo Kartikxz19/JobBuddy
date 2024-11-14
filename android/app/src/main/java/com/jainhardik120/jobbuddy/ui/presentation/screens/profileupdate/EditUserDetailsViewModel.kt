@@ -2,7 +2,10 @@ package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
+import com.jainhardik120.jobbuddy.data.remote.ProfileDetails
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
+import com.jainhardik120.jobbuddy.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
@@ -115,63 +118,115 @@ fun ContactDetail.toInputModel(): InputModel.ContactDetail {
     )
 }
 
-// Mapper functions for Skill
-fun InputModel.Skill.toData(skill: String, level: Int): Skill {
-    return Skill(skill, level)
+fun InputModel.Skill.toData(): Skill {
+    return Skill(
+        (this.fields["skill"]?.type as InputType.Text).value,
+        (this.fields["level"]?.type as InputType.Number).value
+    )
 }
 
 // Mapper functions for Project
-fun InputModel.Project.toData(
-    name: String,
-    techStack: String,
-    demoLink: String,
-    startDate: InputType.Date,
-    endDate: InputType.Date,
-    description: String
-): Project {
-    return Project(name, techStack, demoLink, startDate, endDate, description)
+fun InputModel.Project.toData(): Project {
+    return Project(
+        (this.fields["name"]?.type as InputType.Text).value,
+        (this.fields["techStack"]?.type as InputType.Text).value,
+        (this.fields["demoLink"]?.type as InputType.Text).value,
+        (this.fields["startDate"]?.type as InputType.Date),
+        (this.fields["endDate"]?.type as InputType.Date),
+        (this.fields["description"]?.type as InputType.Text).value
+    )
 }
 
 // Mapper functions for Experience
-fun InputModel.Experience.toData(
-    title: String,
-    company: String,
-    startDate: InputType.Date,
-    endDate: InputType.Date,
-    description: String
-): Experience {
-    return Experience(title, company, startDate, endDate, description)
+fun InputModel.Experience.toData(): Experience {
+    return Experience(
+        (this.fields["title"]?.type as InputType.Text).value,
+        (this.fields["company"]?.type as InputType.Text).value,
+        (this.fields["startDate"]?.type as InputType.Date),
+        (this.fields["endDate"]?.type as InputType.Date),
+        (this.fields["description"]?.type as InputType.Text).value
+    )
 }
 
 // Mapper functions for Achievement
-fun InputModel.Achievement.toData(title: String, description: String): Achievement {
-    return Achievement(title, description)
+fun InputModel.Achievement.toData(): Achievement {
+    return Achievement(
+        (this.fields["title"]?.type as InputType.Text).value,
+        (this.fields["description"]?.type as InputType.Text).value
+    )
 }
 
 // Mapper functions for Education
-fun InputModel.Education.toData(
-    institution: String,
-    degree: String,
-    startDate: InputType.Date,
-    endDate: InputType.Date
-): Education {
-    return Education(institution, degree, startDate, endDate)
+fun InputModel.Education.toData(): Education {
+    return Education(
+        (this.fields["institution"]?.type as InputType.Text).value,
+        (this.fields["degree"]?.type as InputType.Text).value,
+        (this.fields["startDate"]?.type as InputType.Date),
+        (this.fields["endDate"]?.type as InputType.Date)
+    )
 }
 
 // Mapper functions for ProfileLink
-fun InputModel.ProfileLink.toData(platform: String, url: String): ProfileLink {
-    return ProfileLink(platform, url)
+fun InputModel.ProfileLink.toData(): ProfileLink {
+    return ProfileLink(
+        (this.fields["platform"]?.type as InputType.Text).value,
+        (this.fields["url"]?.type as InputType.Text).value
+    )
 }
 
 // Mapper functions for ContactDetail
-fun InputModel.ContactDetail.toData(type: String, value: String): ContactDetail {
-    return ContactDetail(type, value)
+fun InputModel.ContactDetail.toData(): ContactDetail {
+    return ContactDetail(
+        (this.fields["type"]?.type as InputType.Text).value,
+        (this.fields["value"]?.type as InputType.Text).value
+    )
 }
 
 @HiltViewModel
-class EditUserDetailsViewModel @Inject constructor() : BaseViewModel() {
+class EditUserDetailsViewModel @Inject constructor(
+    private val api: JobBuddyAPI
+) : BaseViewModel() {
     private val _state = mutableStateOf(EditUserDetailsState())
     val state: State<EditUserDetailsState> = _state
+
+    private fun getInitialData() {
+        makeApiCall({
+            api.getProfileDetails()
+        }) { response ->
+            _state.value = EditUserDetailsState(
+                skills = response.skills.map { it.toInputModel() },
+                projects = response.projects.map { it.toInputModel() },
+                experience = response.experience.map { it.toInputModel() },
+                achievements = response.achievements.map { it.toInputModel() },
+                education = response.education.map { it.toInputModel() },
+                profileLinks = response.profileLinks.map { it.toInputModel() },
+                contactDetails = response.contactDetails.map { it.toInputModel() }
+            )
+        }
+    }
+
+
+    init {
+        getInitialData()
+    }
+
+    private fun saveUserDetails() {
+        makeApiCall({
+            api.updateProfileDetails(
+                data = ProfileDetails(
+                    skills = _state.value.skills.map { it.toData() },
+                    projects = _state.value.projects.map { it.toData() },
+                    experience = _state.value.experience.map { it.toData() },
+                    achievements = _state.value.achievements.map { it.toData() },
+                    education = _state.value.education.map { it.toData() },
+                    profileLinks = _state.value.profileLinks.map { it.toData() },
+                    contactDetails = _state.value.contactDetails.map { it.toData() }
+                )
+            )
+        }) {response->
+            sendUiEvent(UiEvent.ShowToast(response.message))
+        }
+    }
 
     fun onEvent(event: EditUserDetailsEvent) {
         when (event) {
@@ -275,9 +330,6 @@ class EditUserDetailsViewModel @Inject constructor() : BaseViewModel() {
         }
     }
 
-    private fun saveUserDetails() {
-
-    }
 }
 
 sealed class EditUserDetailsEvent {
