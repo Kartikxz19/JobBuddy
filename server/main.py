@@ -1,7 +1,8 @@
+#main.py
 from job_matcher import process_job_and_resume, conduct_interview, evaluate_interview
 import streamlit as st
 import os
-
+from flashCards import FlashcardSystem,display_flashcards
 st.title("Job Application and Interview Process")
 st.header("Stage 1: Are you suitable for the job?")
 
@@ -73,3 +74,30 @@ if st.session_state.get("show_interview_button", False):
 
         st.markdown("### Interview Evaluation:")
         st.markdown(evaluation)
+# After the interview evaluation section, add:
+# In main.py
+if st.button("Generate Study Plan"):
+    with st.spinner("Generating personalized study plan..."):
+        flashcard_system = FlashcardSystem()
+        study_plan = flashcard_system.generate_study_plan(
+            st.session_state["job_posting_raw"],  # Use the raw dictionary instead
+            st.session_state["resume"]
+        )
+        print(study_plan)
+        # Streamlit App
+        st.title("Skill Improvement Tracker")
+
+        # Iterate over each skill in the data
+        for skill, info in study_plan.items():
+            st.subheader(skill)
+            st.write(f"Status: {info['status']}")
+
+            # Flashcards Section
+            st.markdown("**Flashcards:**")
+            for flashcard in info.get('flashcards', []):
+                with st.expander(f"Question: {flashcard['question']}"):
+                    st.write(f"Answer: {flashcard['answer']}")
+
+        # Optional: Display raw JSON data
+        st.markdown("### Raw Data")
+        st.json(study_plan)

@@ -18,6 +18,7 @@ try:
     import pygame
     AUDIO_AVAILABLE = True
 except ImportError:
+
     AUDIO_AVAILABLE = False
 
 load_dotenv()
@@ -375,5 +376,7 @@ def process_job_and_resume(job_profile: str, resume_pdf: str):
             "extracted_resume": extracted_resume,
         }
     )
-
+    # When returning/storing in session state:
+    st.session_state["job_posting_raw"] = json_job_posting  # Store the raw dictionary
+    st.session_state["job_posting_formatted"] = json_job_posting_formatted  # Store the formatted string
     return answer.content, json_job_posting_formatted, extracted_resume
