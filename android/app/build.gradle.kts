@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.jainhardik120.jobbuddy"
-        minSdk = 24
+        minSdk = 31
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

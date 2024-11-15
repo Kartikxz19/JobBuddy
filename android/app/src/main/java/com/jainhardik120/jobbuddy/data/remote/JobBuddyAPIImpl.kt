@@ -118,6 +118,20 @@ class JobBuddyAPIImpl(
         }
     }
 
+    override suspend fun getInterviewQuestions(jobDescription: String): Result<InterviewQuestions, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                APIRoutes.GENERATE_QUESTIONS_ROUTE, HttpMethod.Post, mapOf("job_description" to jobDescription)
+            )
+        }
+    }
+
+    override suspend fun evaluateInterview(request: InterviewEvaluationRequest): Result<EvaluationResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(APIRoutes.INTERVIEW_EVALUATE_ROUTE, HttpMethod.Post, request)
+        }
+    }
+
     override fun uploadResume(contentUri: Uri): Flow<ProgressUpdate> = channelFlow {
         val info = fileReader.uriToFileInfo(contentUri)
         client.submitFormWithBinaryData(
@@ -165,4 +179,18 @@ data class ResumeStatusResponse(
     val filePath: String? = null,
     @SerialName("upload_time")
     val uploadTime: String? = null
+)
+
+@Serializable
+data class InterviewEvaluationRequest(
+    @SerialName("job_description")
+    val jobDescription: String,
+    @SerialName("questions_responses")
+    val questionsResponses : List<QuestionResponse>
+)
+
+@Serializable
+data class QuestionResponse(
+    val question : String,
+    val answer : String
 )

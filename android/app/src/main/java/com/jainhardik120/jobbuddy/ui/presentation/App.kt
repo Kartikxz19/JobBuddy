@@ -38,9 +38,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import com.jainhardik120.jobbuddy.ui.presentation.screens.interview.VirtualInterviewScreen
+import com.jainhardik120.jobbuddy.ui.presentation.screens.interview.VirtualInterviewViewModel
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.EditUserDetailsViewModel
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.ProfileUpdateScreen
 import dev.jeziellago.compose.markdowntext.MarkdownText
@@ -134,14 +137,14 @@ fun App() {
                         Text("Check status")
                     }
                     Button(onClick = {
-                        navController.navigate(AppRoutes.ProfileUpdateScreen.route)
+                        navController.navigate(AppRoutes.VirtualInterviewScreen.route)
                     }
 
                     ) {
                         Text("Take virtual interview")
                     }
                     Button(onClick = {
-                        navController.navigate(AppRoutes.VirtualInterviewScreen.route)
+                        navController.navigate(AppRoutes.ProfileUpdateScreen.route)
                     }
 
                     ) {
@@ -207,5 +210,11 @@ fun App() {
             val state by viewModel.state
             ProfileUpdateScreen(state = state, onEvent = viewModel::onEvent)
         }
+
+        composable(AppRoutes.VirtualInterviewScreen.route) {
+            VirtualInterviewScreen(navController = navController)
+        }
     }
 }
+
+

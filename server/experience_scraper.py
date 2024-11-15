@@ -13,6 +13,8 @@ import certifi
 import urllib3
 from serpapi.google_search import GoogleSearch
 from langchain.document_loaders import WebBaseLoader
+
+
 llm = ChatGroq(
     model="llama-3.1-70b-versatile",
     temperature=0,

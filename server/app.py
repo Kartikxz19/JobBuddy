@@ -261,12 +261,7 @@ def get_resume_status(user_id):
         print(e)
         return jsonify({'error': 'An internal server error occurred'}), 500
     
-
-@app.route('/api/profile', methods=['GET'])
-@token_required
-def get_profile(user_id):
-
-    # Fetch all user data
+def get_profile_data(user_id):
     skills = Skill.query.filter_by(user_id=user_id).all()
     projects = Project.query.filter_by(user_id=user_id).all()
     experiences = Experience.query.filter_by(user_id=user_id).all()
@@ -275,7 +270,7 @@ def get_profile(user_id):
     profile_links = ProfileLink.query.filter_by(user_id=user_id).all()
     contact_details = ContactDetail.query.filter_by(user_id=user_id).all()
 
-    return jsonify({
+    return {
         "skills": [{
             "skill": s.skill,
             "level": s.level
@@ -313,7 +308,13 @@ def get_profile(user_id):
             "type": c.type,
             "value": c.value
         } for c in contact_details]
-    })
+    }
+
+@app.route('/api/profile', methods=['GET'])
+@token_required
+def get_profile(user_id):
+    response = get_profile_data(user_id)
+    return jsonify(response)
 
 
 @app.route('/api/profile', methods=['PUT'])
@@ -403,6 +404,42 @@ def update_profile(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+
+
+@app.route('/api/generateInterviewQuestions', methods=['POST'])
+@token_required
+def get_questions(user_id):
+    try:
+        job_description = request.json.get('job_description')
+        if not job_description:
+            return jsonify({'error': 'Job description is required'}), 400
+        resume = get_profile_data(user_id)
+        questions = generate_interview_questions(job_description, resume)
+        return jsonify({"questions" : questions})
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error" : str(e)}), 500
+
+
+@app.route('/api/evaluateInterview', methods=['POST'])
+@token_required
+def evaluate(user_id):
+    try:
+            
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        job_description = data.get('job_description')
+        if not job_description:
+            return jsonify({'error': 'Job description is required'}), 400
+        responses = data.get('questions_responses', [])
+        resume = get_profile_data(user_id)
+        evaluation = evaluate_interview(responses, job_description, resume)
+        return jsonify({"evaluation" : evaluation})
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error" : str(e)}), 500
 
 
 if __name__ == '__main__':

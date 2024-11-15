@@ -277,20 +277,20 @@ def main():
     # Create output directory if it doesn't exist
     os.makedirs("generated_resumes", exist_ok=True)
 
-    # Generate enhanced descriptions with a single AI call
-    print("Enhancing descriptions...")
-    enhanced_data = enhance_all_descriptions(CANDIDATE_DATA, JOB_DESCRIPTION)
+    # # Generate enhanced descriptions with a single AI call
+    # print("Enhancing descriptions...")
+    # enhanced_data = enhance_all_descriptions(CANDIDATE_DATA, JOB_DESCRIPTION)
 
-    # Generate LaTeX content
-    print("Generating LaTeX content...")
-    latex_content = generate_latex(CANDIDATE_DATA, enhanced_data)
+    # # Generate LaTeX content
+    # print("Generating LaTeX content...")
+    # latex_content = generate_latex(CANDIDATE_DATA, enhanced_data)
     latex_filepath = "generated_resumes/generated_resume.tex"
-    save_latex_to_file(latex_content, latex_filepath)
+    # save_latex_to_file(latex_content, latex_filepath)
 
     # Convert LaTeX to PDF
     pdf_filepath = "generated_resumes/generated_resume.pdf"
     print("Generating PDF...")
-    # convert_latex_to_pdf(latex_filepath, pdf_filepath)
+    convert_latex_to_pdf(latex_filepath, pdf_filepath)
     print(f"Resume generated successfully! Saved as: {pdf_filepath}")
 
 

@@ -25,24 +25,38 @@ interface JobBuddyAPI {
 
     suspend fun getResumeStatus(): Result<ResumeStatusResponse, MessageError>
 
-    suspend fun getProfileDetails() : Result<ProfileDetails, MessageError>
+    suspend fun getProfileDetails(): Result<ProfileDetails, MessageError>
 
-    suspend fun updateProfileDetails(data : ProfileDetails) : Result<MessageResponse, MessageError>
+    suspend fun updateProfileDetails(data: ProfileDetails): Result<MessageResponse, MessageError>
+
+    suspend fun getInterviewQuestions(jobDescription: String): Result<InterviewQuestions, MessageError>
+
+    suspend fun evaluateInterview(request: InterviewEvaluationRequest): Result<EvaluationResponse, MessageError>
+
 }
+
+@Serializable
+data class EvaluationResponse(
+    val evaluation: String
+)
 
 data class ProgressUpdate(
     val bytesSent: Long,
     val totalBytes: Long
 )
 
-
 @Serializable
 data class ProfileDetails(
-    val achievements : List<Achievement>,
-    val contactDetails : List<ContactDetail>,
-    val education : List<Education>,
-    val experience : List<Experience>,
-    val profileLinks : List<ProfileLink>,
-    val projects : List<Project>,
-    val skills : List<Skill>
+    val achievements: List<Achievement>,
+    val contactDetails: List<ContactDetail>,
+    val education: List<Education>,
+    val experience: List<Experience>,
+    val profileLinks: List<ProfileLink>,
+    val projects: List<Project>,
+    val skills: List<Skill>
+)
+
+@Serializable
+data class InterviewQuestions(
+    val questions: List<String>
 )

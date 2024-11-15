@@ -10,4 +10,6 @@ object APIRoutes {
     const val RESUME_SCORE_ROUTE = "$AUTH_BASE_URL/checkResumeScore"
     const val RESUME_STATUS_ROUTE = "$AUTH_BASE_URL/getResumeStatus"
     const val PROFILE_ROUTE = "$AUTH_BASE_URL/api/profile"
+    const val GENERATE_QUESTIONS_ROUTE = "$AUTH_BASE_URL/api/generateInterviewQuestions"
+    const val INTERVIEW_EVALUATE_ROUTE = "$AUTH_BASE_URL/api/evaluateInterview"
 }
