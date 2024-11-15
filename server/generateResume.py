@@ -2,11 +2,14 @@ import json
 import os
 import re
 import subprocess
+import logging
+import sys
 from pdflatex import PDFLaTeX
 from datetime import datetime
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-
+from typing import Dict, Optional
+from pathlib import Path
 # Load environment variables
 load_dotenv()
 
@@ -16,7 +19,12 @@ llm = ChatGroq(
     temperature=0,
     groq_api_key=os.getenv("GROQ_API_KEY"),
 )
-
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 # Sample job description
 JOB_DESCRIPTION = """
 Senior Full Stack Developer position at a fast-growing tech company.
@@ -254,44 +262,110 @@ def save_latex_to_file(latex_content, filepath):
     with open(filepath, "w") as f:
         f.write(latex_content)
 
+class PDFConversionError(Exception):
+    """Custom exception for PDF conversion errors"""
+    pass
 
-def convert_latex_to_pdf(latex_filepath, pdf_filepath):
-    """Convert a LaTeX file to PDF using pdflatex Python module."""
+
+def convert_latex_to_pdf(latex_filepath: str, pdf_filepath: str) -> bool:
+    """
+    Convert LaTeX to PDF using direct pdflatex command with proper error handling.
+    Returns True if the PDF was generated successfully, False otherwise.
+    """
     try:
-        # Initialize PDFLaTeX with the .tex file
-        pdfl = PDFLaTeX.from_texfile(latex_filepath)
-        
-        # Create the PDF, keeping the log file if desired
-        pdf, log, completed_process = pdfl.create_pdf(keep_pdf_file=True, keep_log_file=True)
-        
-        # Save the PDF to the specified filepath
-        with open(pdf_filepath, 'wb') as f:
-            f.write(pdf)
-        
-        print(f"PDF created successfully: {pdf_filepath}")
+        # Convert to absolute paths
+        latex_filepath = os.path.abspath(latex_filepath)
+        pdf_filepath = os.path.abspath(pdf_filepath)
+
+        # Get the directory containing the .tex file
+        tex_dir = os.path.dirname(latex_filepath)
+        tex_filename = os.path.basename(latex_filepath)
+
+        # Ensure the directory exists
+        os.makedirs(tex_dir, exist_ok=True)
+
+        # Change to the directory containing the .tex file
+        original_dir = os.getcwd()
+        os.chdir(tex_dir)
+
+        try:
+            # Run pdflatex twice to ensure proper rendering of all elements
+            for _ in range(2):
+                result = subprocess.run(
+                    ['pdflatex', '-interaction=nonstopmode', tex_filename],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=True
+                )
+
+            # Move the generated PDF to the desired location if they're different
+            generated_pdf = os.path.splitext(tex_filename)[0] + '.pdf'
+            if os.path.abspath(generated_pdf) != pdf_filepath and os.path.exists(generated_pdf):
+                os.replace(generated_pdf, pdf_filepath)
+
+            # Clean up auxiliary files
+            for ext in ['.aux', '.log', '.out']:
+                aux_file = os.path.splitext(tex_filename)[0] + ext
+                if os.path.exists(aux_file):
+                    os.remove(aux_file)
+
+            return True
+
+        finally:
+            # Always change back to the original directory
+            os.chdir(original_dir)
+
+    except subprocess.CalledProcessError as e:
+        error_msg = f"LaTeX compilation failed with return code {e.returncode}"
+        logger.error(error_msg)
+        logger.error(f"stdout: {e.stdout.decode('utf-8', errors='ignore')}")
+        logger.error(f"stderr: {e.stderr.decode('utf-8', errors='ignore')}")
+        return False
+    except FileNotFoundError:
+        error_msg = ("pdflatex command not found. Please install TeX Live or MiKTeX.\n"
+                     "Windows: Install MiKTeX from https://miktex.org/download\n"
+                     "Linux: Run 'sudo apt-get install texlive-full'\n"
+                     "macOS: Install MacTeX from https://tug.org/mactex/")
+        logger.error(error_msg)
+        return False
     except Exception as e:
-        print(f"An error occurred: {e}")
+        error_msg = f"PDF conversion failed: {str(e)}"
+        logger.error(error_msg)
+        return False
 
 
 def main():
-    # Create output directory if it doesn't exist
-    os.makedirs("generated_resumes", exist_ok=True)
+    try:
+        # Create output directory if it doesn't exist
+        output_dir = Path("generated_resumes")
+        output_dir.mkdir(exist_ok=True)
 
-    # Generate enhanced descriptions with a single AI call
-    print("Enhancing descriptions...")
-    enhanced_data = enhance_all_descriptions(CANDIDATE_DATA, JOB_DESCRIPTION)
+        # Generate enhanced descriptions with a single AI call
+        logger.info("Enhancing descriptions...")
+        enhanced_data = enhance_all_descriptions(CANDIDATE_DATA, JOB_DESCRIPTION)
 
-    # Generate LaTeX content
-    print("Generating LaTeX content...")
-    latex_content = generate_latex(CANDIDATE_DATA, enhanced_data)
-    latex_filepath = "generated_resumes/generated_resume.tex"
-    save_latex_to_file(latex_content, latex_filepath)
+        # Generate LaTeX content
+        logger.info("Generating LaTeX content...")
+        latex_content = generate_latex(CANDIDATE_DATA, enhanced_data)
+        latex_filepath = output_dir / "generated_resume.tex"
 
-    # Convert LaTeX to PDF
-    pdf_filepath = "generated_resumes/generated_resume.pdf"
-    print("Generating PDF...")
-    # convert_latex_to_pdf(latex_filepath, pdf_filepath)
-    print(f"Resume generated successfully! Saved as: {pdf_filepath}")
+        # Save LaTeX content
+        latex_filepath.write_text(latex_content, encoding='utf-8')
+        logger.info(f"LaTeX file saved: {latex_filepath}")
+
+        # Convert to PDF
+        pdf_filepath = output_dir / "generated_resume.pdf"
+        logger.info("Converting to PDF...")
+        if convert_latex_to_pdf(str(latex_filepath), str(pdf_filepath)):
+            logger.info(f"Resume generated successfully! Saved as: {pdf_filepath}")
+        else:
+            logger.error("PDF conversion failed. Please check the LaTeX content and your LaTeX installation.")
+            # Return a non-zero exit code to indicate failure
+            sys.exit(1)
+
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
