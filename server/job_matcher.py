@@ -294,15 +294,14 @@ def evaluate_interview(responses, job_posting, resume):
 
 # Core function to process job link and resume
 def process_job_and_resume(job_profile: str, resume_pdf: str):
-
     # Create prompt for extracting job posting info
     prompt_extract = PromptTemplate.from_template(
-        f"""
+        """
         ### SCRAPED TEXT FROM WEBSITE:
         {job_profile}
         ### INSTRUCTION:
         The scraped text is from the career's page of a website.
-        Your job is to extract the job posting and return them in JSON format containing the following keys: `role`,`experience`,`skills`,`description`.
+        Your job is to extract the job posting and return them in JSON format containing the following keys:`company`,`role`,`experience`,`skills`,`description`.
         Ensure that the `skills` key contains a list of skills.
         Only return the valid JSON.
         ### VALID JSON (NO PREAMBLE):
@@ -324,7 +323,7 @@ def process_job_and_resume(job_profile: str, resume_pdf: str):
             "skills": [],
             "description": "",
         }
-    print(json_job_posting)
+
     # Handle the case where 'skills' might not be a list
     skills = json_job_posting.get("skills", [])
     if isinstance(skills, str):
@@ -344,9 +343,9 @@ def process_job_and_resume(job_profile: str, resume_pdf: str):
 
     # Create prompt for formatting resume
     prompt_extract_resume = PromptTemplate.from_template(
-        f"""
+        """
         ### SCRAPED TEXT FROM RESUME:
-        {resume_text}
+        {text}
         ### INSTRUCTION:
         The scraped text is from the resume of a candidate.
         Your job is to convert it into a proper resume format.
@@ -358,25 +357,33 @@ def process_job_and_resume(job_profile: str, resume_pdf: str):
 
     # Final prompt to match job posting with resume
     prompt_final = PromptTemplate.from_template(
-        f"""
+        """
         ### JOB POSTING:
-        {json_job_posting_formatted}
-        ### Candidate Resume: 
-        {extracted_resume}
+        {job_posting}
+        ### CANDIDATE RESUME: 
+        {resume}
         ### INSTRUCTION:
-        Your task is to check whether the candidate's resume matches the job posting. Highlight plus points and negative points based on the compatibility.
-        Return the result of the matching, focusing on how well the candidate's qualifications align with the job requirements.
+        Your task is to check whether the candidate's resume matches the job posting. 
+        Analyze and provide:
+        1. Overall match percentage
+        2. Key matching skills and qualifications
+        3. Notable gaps or missing requirements
+        4. Recommendations for improvement
+        5. Strengths that stand out
+
+        Return a detailed analysis focusing on how well the candidate's qualifications align with the job requirements.
         """
     )
 
     chain_final = prompt_final | llm
     answer = chain_final.invoke(
         input={
-            "json_job_posting": json_job_posting_formatted,
-            "extracted_resume": extracted_resume,
+            "job_posting": json_job_posting_formatted,
+            "resume": extracted_resume,
         }
     )
-    # When returning/storing in session state:
+
+    # Store in session state
     st.session_state["job_posting_raw"] = json_job_posting  # Store the raw dictionary
     st.session_state["job_posting_formatted"] = json_job_posting_formatted  # Store the formatted string
     return answer.content, json_job_posting_formatted, extracted_resume

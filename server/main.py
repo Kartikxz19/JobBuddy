@@ -3,6 +3,7 @@ from job_matcher import process_job_and_resume, conduct_interview, evaluate_inte
 import streamlit as st
 import os
 from flashCards import FlashcardSystem,display_flashcards
+from experience_scraper import get_interview_insights
 st.title("Job Application and Interview Process")
 st.header("Stage 1: Are you suitable for the job?")
 
@@ -101,3 +102,15 @@ if st.button("Generate Study Plan"):
         # Optional: Display raw JSON data
         st.markdown("### Raw Data")
         st.json(study_plan)
+if st.session_state.get("job_posting", False):
+    st.header("Interview Experiences")
+    if st.button("Get Interview Insights"):
+        with st.spinner("Searching for relevant interview experiences..."):
+            insights = get_interview_insights(st.session_state["job_posting_raw"])
+            st.markdown("### Interview Insights:")
+            st.markdown(insights)
+
+            # Optional: Show sources
+            st.markdown("---")
+            st.markdown(
+                "*Note: These insights are compiled from various online sources and may not represent the current interview process.*")
