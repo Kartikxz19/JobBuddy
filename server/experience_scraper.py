@@ -120,7 +120,7 @@ class InterviewExperienceScraper:
             # Example: Using a public API (you'll need to sign up for an API key)
             # This is just an example - replace with actual API endpoints
             params = {
-                "api_key": "f3ae9b85ed5da0fc5c961f3060ad8edd3d6aa55475dee5365f50e0258f7e0eba",
+                "api_key": self.serpapi_key,
                 "engine": "google",
                 "q": f"{company} {role} interview experiences",
                 "google_domain": "google.com",
