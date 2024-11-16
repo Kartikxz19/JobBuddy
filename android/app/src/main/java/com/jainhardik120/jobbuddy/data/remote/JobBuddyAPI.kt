@@ -30,7 +30,11 @@ interface JobBuddyAPI {
     suspend fun simplifyJobData(jobDescription: String): Result<JobPosting, MessageError>
     suspend fun checkResumeScore(jobData: JobPosting): Result<ResumeScoreResponse, MessageError>
 
-    // Generate Tailored Resume not here
+    suspend fun generateTailoredResume(
+        fileName: String = "tailored_resume.pdf",
+        jobData: JobPosting
+    ): Result<Unit, MessageError>
+
     suspend fun generateFlashCards(jobData: JobPosting): Result<StudyPlanResponse, MessageError>
     suspend fun getInterviewQuestions(jobData: JobPosting): Result<InterviewQuestions, MessageError>
     suspend fun evaluateInterview(request: InterviewEvaluationRequest): Result<EvaluationResponse, MessageError>
@@ -46,6 +50,7 @@ data class StudyPlanResponse(
 data class StudyPlan(
     val skill: String,
     val status: String,
+    @SerialName("flashcards")
     val flashCards: List<FlashCard>
 )
 

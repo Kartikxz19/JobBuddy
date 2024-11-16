@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jainhardik120.jobbuddy.ui.presentation.screens.home.HomeScreen
 import com.jainhardik120.jobbuddy.ui.presentation.screens.interview.VirtualInterviewScreen
+import com.jainhardik120.jobbuddy.ui.presentation.screens.jobdetails.JobDetailsScreen
 import com.jainhardik120.jobbuddy.ui.presentation.screens.login.LoginScreen
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.ProfileUpdateScreen
 
@@ -21,34 +22,33 @@ fun App() {
     LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
             navController.popBackStack()
-            navController.navigate(AppRoutes.HomeScreen.route)
+            navController.navigate(AppRoutes.HomeScreen)
         } else {
             navController.popBackStack()
-            navController.navigate(AppRoutes.LoginScreen.route)
+            navController.navigate(AppRoutes.LoginScreen)
         }
     }
     NavHost(
         navController = navController, startDestination = if (isLoggedIn) {
-            AppRoutes.HomeScreen.route
+            AppRoutes.HomeScreen
         } else {
-            AppRoutes.LoginScreen.route
+            AppRoutes.LoginScreen
         }
     ) {
-        composable(AppRoutes.LoginScreen.route) {
+        composable<AppRoutes.LoginScreen> {
             LoginScreen(navController = navController)
         }
-        composable(AppRoutes.HomeScreen.route) {
+        composable<AppRoutes.HomeScreen> {
             HomeScreen(navController = navController)
         }
-        composable(AppRoutes.ProfileUpdateScreen.route) {
+        composable<AppRoutes.ProfileUpdateScreen> {
             ProfileUpdateScreen(navController = navController)
         }
-        composable(AppRoutes.VirtualInterviewScreen.route) {
+        composable<AppRoutes.VirtualInterviewScreen> {
             VirtualInterviewScreen(navController = navController)
         }
-        composable(AppRoutes.JobDetailsScreen.route) {
-            // Here we will enter job description, and then generate the content from backend and show relevant options to user
+        composable<AppRoutes.JobDetailsScreen> {
+            JobDetailsScreen(navController = navController)
         }
     }
 }
-

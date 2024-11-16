@@ -74,7 +74,7 @@ object AppModule {
         keyValueStorage: KeyValueStorage,
         @ApplicationContext context: Context
     ): JobBuddyAPI {
-        return JobBuddyAPIImpl(client, keyValueStorage, fileReader = FileReader(context))
+        return JobBuddyAPIImpl(context, client, keyValueStorage, fileReader = FileReader(context))
     }
 
     @Provides

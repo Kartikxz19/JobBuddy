@@ -1,5 +1,6 @@
 package com.jainhardik120.jobbuddy.ui.presentation.screens.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,7 +58,7 @@ fun HomeScreen(
                 Text(text = stringResource(id = R.string.app_name))
             }, actions = {
                 IconButton({
-                    navController.navigate(AppRoutes.ProfileUpdateScreen.route)
+                    navController.navigate(AppRoutes.ProfileUpdateScreen)
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Person,
@@ -109,7 +110,9 @@ fun HomeScreen(
 
             LazyColumn {
                 itemsIndexed(state.jobList) { index, item ->
-                    Row {
+                    Row(Modifier.clickable(enabled = true) {
+                        navController.navigate(AppRoutes.JobDetailsScreen(jobId = item.id))
+                    }) {
                         Text(item.id.toString())
                         Text(item.role)
                     }
