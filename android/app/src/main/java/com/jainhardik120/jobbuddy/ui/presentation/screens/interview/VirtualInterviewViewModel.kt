@@ -37,9 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.jainhardik120.jobbuddy.R
-import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
-import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.data.dto.QuestionResponse
+import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import com.jainhardik120.jobbuddy.ui.CollectUiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -216,25 +215,23 @@ class VirtualInterviewViewModel @Inject constructor(
             }
         }
 
-        // Called when partial recognition results are available
         override fun onPartialResults(partialResults: Bundle?) {
             Log.d(TAG, "onPartialResults: Partial recognition results available")
         }
 
-        // Called for any events related to speech recognition
         override fun onEvent(eventType: Int, params: Bundle?) {
             Log.d(TAG, "onEvent: Event occurred, type: $eventType")
         }
     }
 
     fun generateQuestions() {
-        makeApiCall({
-            api.getInterviewQuestions(_state.value.jobDescription)
-        }) { response ->
-            _state.value = _state.value.copy(
-                questions = response.questions
-            )
-        }
+//        makeApiCall({
+//            api.getInterviewQuestions(_state.value.jobDescription)
+//        }) { response ->
+//            _state.value = _state.value.copy(
+//                questions = response.questions
+//            )
+//        }
     }
 
     fun startRecording() {
@@ -268,14 +265,14 @@ class VirtualInterviewViewModel @Inject constructor(
     }
 
     fun getEvaluationResult() {
-        makeApiCall({
-            api.evaluateInterview(
-                InterviewEvaluationRequest(
-                    _state.value.jobDescription, _state.value.questionAnswerResponses
-                )
-            )
-        }) { response ->
-            Log.d("TAG", "Evaluation result: ${response.evaluation}")
-        }
+//        makeApiCall({
+//            api.evaluateInterview(
+//                InterviewEvaluationRequest(
+//                    _state.value.jobDescription, _state.value.questionAnswerResponses
+//                )
+//            )
+//        }) { response ->
+//            Log.d("TAG", "Evaluation result: ${response.evaluation}")
+//        }
     }
 }

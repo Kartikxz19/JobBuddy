@@ -1,61 +1,189 @@
 package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import com.jainhardik120.jobbuddy.ui.CollectUiEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileUpdateScreen(
-    state: EditUserDetailsState, onEvent: (EditUserDetailsEvent) -> Unit
+    navController: NavHostController
 ) {
+    val viewModel: EditUserDetailsViewModel = hiltViewModel()
+    val state by viewModel.state
 
-    LazyColumn {
-        profileSection(
-            dataList = state.skills,
-            onEvent = onEvent,
-            newItem = InputModel.Skill("", 0)
-        )
-        profileSection(
-            dataList = state.projects, onEvent = onEvent,
-            newItem = InputModel.Project("", "", "", InputType.Date(0, 0), InputType.Date(0, 0), "")
-        )
-        profileSection(
-            dataList = state.experience, onEvent = onEvent,
-            newItem = InputModel.Experience("", "", InputType.Date(0, 0), InputType.Date(0, 0), "")
-        )
-        profileSection(
-            dataList = state.achievements, onEvent = onEvent,
-            newItem = InputModel.Achievement("", "")
-        )
-        profileSection(
-            dataList = state.education, onEvent = onEvent,
-            newItem = InputModel.Education("", "", InputType.Date(0, 0), InputType.Date(0, 0))
-        )
-        profileSection(
-            dataList = state.profileLinks, onEvent = onEvent,
-            newItem = InputModel.ProfileLink("", "")
-        )
-        profileSection(
-            dataList = state.contactDetails, onEvent = onEvent,
-            newItem = InputModel.ContactDetail("", "")
-        )
+
+    CollectUiEvents(
+        navHostController = navController,
+        events = viewModel.uiEvent,
+        hostState = null
+    )
+
+
+    val onEvent: (EditUserDetailsEvent) -> Unit = viewModel::onEvent
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { contentUri ->
+        contentUri?.let {
+            viewModel.uploadFile(contentUri)
+        }
+    }
+    var showBottomSheet = remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    if (showBottomSheet.value) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                if (!state.isUploading) {
+                    showBottomSheet.value = false
+                }
+            }, sheetState = sheetState
+        ) {
+            LazyColumn {
+                itemsIndexed(state.userResumes) { index, item ->
+                    Text(item.resumePath)
+                }
+                item {
+                    when {
+                        !state.isUploading -> {
+                            Button(onClick = {
+                                filePickerLauncher.launch("*/*")
+                            }) {
+                                Text(text = "Pick a file")
+                            }
+                        }
+
+                        else -> {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                val animatedProgress by animateFloatAsState(
+                                    targetValue = state.progress,
+                                    animationSpec = tween(durationMillis = 100),
+                                    label = "File upload progress bar"
+                                )
+                                LinearProgressIndicator(
+                                    progress = { animatedProgress },
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth()
+                                        .height(16.dp)
+                                )
+                                Text(
+                                    text = "${(state.progress * 100).roundToInt()}%"
+                                )
+                                Button(onClick = {
+                                    viewModel.cancelUpload()
+                                }) {
+                                    Text(text = "Cancel upload")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        Modifier.imePadding(), contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { paddingValues ->
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+                .systemBarsPadding()
+                .padding(8.dp)
+        ) {
+            item {
+                Button({
+                    showBottomSheet.value = true
+                }) {
+                    Text("Manage Resumes")
+                }
+            }
+            profileSection(
+                dataList = state.skills,
+                onEvent = onEvent,
+                newItem = InputModel.Skill("", 0)
+            )
+            profileSection(
+                dataList = state.projects, onEvent = onEvent,
+                newItem = InputModel.Project(
+                    "",
+                    "",
+                    "",
+                    InputType.Date(0, 0),
+                    InputType.Date(0, 0),
+                    ""
+                )
+            )
+            profileSection(
+                dataList = state.experience, onEvent = onEvent,
+                newItem = InputModel.Experience(
+                    "",
+                    "",
+                    InputType.Date(0, 0),
+                    InputType.Date(0, 0),
+                    ""
+                )
+            )
+            profileSection(
+                dataList = state.achievements, onEvent = onEvent,
+                newItem = InputModel.Achievement("", "")
+            )
+            profileSection(
+                dataList = state.education, onEvent = onEvent,
+                newItem = InputModel.Education("", "", InputType.Date(0, 0), InputType.Date(0, 0))
+            )
+            profileSection(
+                dataList = state.profileLinks, onEvent = onEvent,
+                newItem = InputModel.ProfileLink("", "")
+            )
+            profileSection(
+                dataList = state.contactDetails, onEvent = onEvent,
+                newItem = InputModel.ContactDetail("", "")
+            )
+        }
     }
 }
 

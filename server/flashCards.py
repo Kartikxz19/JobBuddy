@@ -64,14 +64,15 @@ class FlashcardSystem:
         skill_gaps = self.identify_skill_gaps(job_skills, resume_text)
 
         # Generate flashcards for each skill that needs improvement
-        study_plan = {}
+        study_plan = []
         for skill, status in skill_gaps.items():
             flashcards = self.get_flashcards_for_skill(skill)
             if flashcards:  # Only include skills with available flashcards
-                study_plan[skill] = {
+                study_plan.append({
+                    'skill': skill,
                     'status': status,
                     'flashcards': flashcards
-                }
+                })
 
         return study_plan
 

@@ -1,14 +1,22 @@
 from flask import Flask, request, jsonify, send_file
+from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from google.oauth2 import id_token
 from dotenv import load_dotenv
-from google.auth.transport import requests as google_requests
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import JsonOutputParser
+from google.auth import transport
+from pathlib import Path
+from datetime import datetime, timedelta
+import logging
 import jwt
 import os
-from datetime import datetime, timedelta
-from job_matcher import *
 import glob
 import re
+from job_matcher import format_json, generate_interview_questions
+from generateResume import enhance_all_descriptions, generate_latex, convert_latex_to_pdf
+from flashCards import FlashcardSystem
 
 load_dotenv()
 
@@ -17,6 +25,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("POSTGRESQL_URI")
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
 db = SQLAlchemy(app)
+
+
+llm = ChatGroq(
+    model="llama-3.1-70b-versatile",
+    temperature=0,
+    groq_api_key=os.getenv("GROQ_API_KEY"),
+)
+
 
 if not os.path.exists('resumes'):
     os.makedirs('resumes')
@@ -91,6 +107,10 @@ class ContactDetail(db.Model):
     type = db.Column(db.String(255), nullable=False)
     value = db.Column(db.String(255), nullable=False)
 
+
+with app.app_context():
+    db.create_all()
+
 # Helper functions
 def parse_date(date_str):
     """Convert MM/YYYY to month and year dict"""
@@ -103,10 +123,6 @@ def format_date(month, year):
     """Convert month and year to MM/YYYY format"""
     return f"{int(month):02d}/{year}"
 
-
-with app.app_context():
-    db.create_all()
-
 def generate_jwt_token(user_id):
     expiration_time = datetime.utcnow() + timedelta(hours=24)
     payload = {
@@ -116,39 +132,8 @@ def generate_jwt_token(user_id):
     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
     return token
 
-@app.route('/login', methods=['POST'])
-def login():
-    try:
-        token = request.json.get('idToken')
-        if not token:
-            return jsonify({'error': 'Token missing'}), 400
-
-        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), os.getenv("GOOGLE_CLIENT_ID"))
-
-        if idinfo['aud'] != os.getenv("GOOGLE_CLIENT_ID"):
-            raise ValueError('Invalid audience.')
-
-        google_id = idinfo['sub']
-        email = idinfo.get('email')
-        name = idinfo.get('name')
-
-        user = User.query.filter_by(google_id=google_id).first()
-        if not user:
-            user = User(google_id=google_id, email=email, name=name)
-            db.session.add(user)
-            db.session.commit()
-
-        jwt_token = generate_jwt_token(user.id)
-
-        return jsonify({'message': 'User logged in successfully', 'user_id': str(user.id), 'token': jwt_token}), 200
-
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
-    except Exception as e:
-        print(str(e))
-        return jsonify({'error': 'An error occurred'}), 500
-
 def token_required(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
         if not auth_header:
@@ -157,7 +142,6 @@ def token_required(func):
         if not auth_header.startswith('Bearer '):
             return jsonify({'error': 'Invalid token format. Expected Bearer token.'}), 401
 
-        # Extract the token after 'Bearer '
         token = auth_header.split('Bearer ')[1]
 
         try:
@@ -169,7 +153,6 @@ def token_required(func):
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
 
-    wrapper.__name__ = func.__name__
     return wrapper
 
 def get_latest_resume_path(user_id):
@@ -182,85 +165,6 @@ def get_latest_resume_path(user_id):
     upload_time = datetime.strptime(upload_time_str, '%Y%m%d%H%M%S')
     return latest_file, upload_time
 
-@app.route('/uploadResume', methods=['POST'])
-@token_required
-def upload_resume(user_id):
-    try:
-        if 'resume_file' not in request.files:
-            return jsonify({'error': 'No resume file provided'}), 400
-
-        file = request.files['resume_file']
-
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
-
-        if not file.filename.lower().endswith('.pdf'):
-            return jsonify({'error': 'Only PDF files are allowed'}), 400
-
-        # Generate a timestamped filename
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        file_path = os.path.join('resumes', f"{user_id}_{timestamp}.pdf")
-
-        # Save the uploaded file
-        file.save(file_path)
-
-        return jsonify({'message': 'Resume uploaded successfully', 'file_path': file_path}), 200
-
-    except Exception as e:
-        print(e)
-        return jsonify({'error': 'An internal server error occurred'}), 500
-
-@app.route('/checkResumeScore', methods=['POST'])
-@token_required
-def check_resume_score(user_id):
-    try:
-        job_description = request.json.get('job_description')
-        if not job_description:
-            return jsonify({'error': 'Job description is required'}), 400
-
-        # Check if user has an uploaded resume
-        file_path, _ = get_latest_resume_path(user_id)
-        if not file_path:
-            return jsonify({'error': 'No resume uploaded for this user'}), 400
-
-
-        # Process the extracted text and job description (mocked for demonstration)
-        answer, jobPosting, extractedResume = process_job_and_resume(
-            job_profile=job_description,
-            resume_pdf=file_path
-        )
-        
-        return jsonify({
-            'answer': answer,
-            'job_posting': jobPosting,
-            'extracted_resume': extractedResume
-        }), 200
-
-
-    except Exception as e:
-        print(e)
-        return jsonify({'error': 'An internal server error occurred'}), 500
-
-
-@app.route('/getResumeStatus', methods=['GET'])
-@token_required
-def get_resume_status(user_id):
-    try:
-        # Check if user has an uploaded resume
-        file_path, upload_time = get_latest_resume_path(user_id)
-        if not file_path:
-            return jsonify({'message': 'No resume uploaded'}), 200
-
-        return jsonify({
-            'message': 'Resume uploaded',
-            'file_path': file_path,
-            'upload_time': upload_time.strftime('%Y-%m-%d %H:%M:%S')
-        }), 200
-
-    except Exception as e:
-        print(e)
-        return jsonify({'error': 'An internal server error occurred'}), 500
-    
 def get_profile_data(user_id):
     skills = Skill.query.filter_by(user_id=user_id).all()
     projects = Project.query.filter_by(user_id=user_id).all()
@@ -310,14 +214,189 @@ def get_profile_data(user_id):
         } for c in contact_details]
     }
 
+def get_user_resumes(user_id):
+    """Helper function to get all resume file paths and their upload times for a user."""
+    files = glob.glob(f'resumes/{user_id}_*.pdf')
+    if not files:
+        return []
+    
+    resumes = []
+    for file in files:
+        upload_time_str = file.split('_')[-1].replace('.pdf', '')
+        try:
+            upload_time = datetime.strptime(upload_time_str, '%Y%m%d%H%M%S')
+            resumes.append({
+                'resume_path': file,
+                'upload_time': upload_time.isoformat()
+            })
+        except ValueError:
+            logging.warning(f"Invalid timestamp format in file name: {file}")
+            continue
+    
+    # Sort resumes by upload time (newest first)
+    resumes.sort(key=lambda x: x['upload_time'], reverse=True)
+    return resumes
+
+
+def evaluate_interview(responses, job_posting, resume):
+    prompt = PromptTemplate.from_template(
+        """
+        ### Job Posting:
+        {job_posting}
+
+        ### Candidate's Resume:
+        {resume}
+
+        ### Interview Responses:
+        {responses}
+
+        ### Instruction:
+        Based on the job posting, the candidate's resume, and their responses during the interview, 
+        provide a comprehensive evaluation of the candidate's suitability for the role. 
+        Consider the following:
+        1. How well the candidate's skills and experience match the job requirements
+        2. The quality and relevance of their interview responses
+        3. Any strengths or unique qualifications that stand out
+        4. Potential areas for improvement or skills that may need development
+        5. Overall fit for the role and company culture
+
+        Provide a detailed summary of your evaluation, including specific examples from the resume and interview responses.
+
+        ### Evaluation:
+        """
+    )
+
+    chain = prompt | llm
+    evaluation = chain.invoke(
+        input={"job_posting": job_posting, "resume": resume, "responses": responses}
+    )
+
+    return evaluation.content
+
+
+"""
+API Routes:
+
+/api/login [POST->Login]
+/api/resume/ [GET->List, POST->Upload]
+/api/resume/:id [GET->Retreive Single, DELETE->Delete]
+/api/profile [GET->(Return details), POST->(Update Details)]
+/api/profile/generateFromResume [POST->(Resume Name)]
+/api/job/simplify [POST->(Use AI to retreive JSON Details)]
+/api/job/checkProfileScore [POST->(Send JSON Data, and analyze profile against job details)]
+/api/job/generateTailoredResume [POST->(Send JSON Data, and generate tailored resume)]
+/api/job/flashCards [POST->(Send JSON Data, and generate flash cards)]
+/api/interview/generateQuestions [POST->(Send JSON Data, and generate questions)]
+/api/interview/evaluateResponses [POST->(Send JSON Data, and Question Responses, and evaluate responses)]
+
+"""
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    try:
+        token = request.json.get('idToken')
+        if not token:
+            return jsonify({'error': 'Token missing'}), 400
+
+        idinfo = id_token.verify_oauth2_token(token, transport.requests.Request(), os.getenv("GOOGLE_CLIENT_ID"))
+
+        if idinfo['aud'] != os.getenv("GOOGLE_CLIENT_ID"):
+            raise ValueError('Invalid audience.')
+
+        google_id = idinfo['sub']
+        email = idinfo.get('email')
+        name = idinfo.get('name')
+
+        user = User.query.filter_by(google_id=google_id).first()
+        if not user:
+            user = User(google_id=google_id, email=email, name=name)
+            db.session.add(user)
+            db.session.commit()
+
+        jwt_token = generate_jwt_token(user.id)
+        return jsonify({'message': 'Login successful', 'token': jwt_token, 'user_id' : user.id}), 200
+
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logging.error(f"Login error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.route('/api/resumes', methods=['GET'])
+@token_required
+def list_resumes(user_id):
+    try:
+        resumes = get_user_resumes(user_id)
+        if not resumes:
+            return jsonify({'error': 'No resumes found'}), 404
+        
+        return jsonify({'resumes': resumes})
+    except Exception as e:
+        logging.error(f"List resumes error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/resume', methods=['POST'])
+@token_required
+def upload_resume(user_id):
+    try:
+        if 'resume_file' not in request.files:
+            return jsonify({'error': 'No resume file provided'}), 400
+
+        file = request.files['resume_file']
+        if file.filename == '' or not file.filename.lower().endswith('.pdf'):
+            return jsonify({'error': 'Invalid file format. Only PDF files are allowed'}), 400
+
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        file_path = os.path.join('resumes', f"{user_id}_{timestamp}.pdf")
+        file.save(file_path)
+
+        return jsonify({'message': 'Resume uploaded successfully', 'file_path': file_path}), 200
+    except Exception as e:
+        logging.error(f"Upload resume error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+@app.route('/api/resume/<int:resume_id>', methods=['GET'])
+@token_required
+def get_resume(user_id, resume_id):
+    try:
+        resume_path = f'resumes/{user_id}_{resume_id}.pdf'
+        if not os.path.exists(resume_path):
+            return jsonify({'error': 'Resume not found'}), 404
+        
+        return send_file(resume_path, mimetype='application/pdf')
+    except Exception as e:
+        logging.error(f"Get resume error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/resume/<int:resume_id>', methods=['DELETE'])
+@token_required
+def delete_resume(user_id, resume_id):
+    try:
+        resume_path = f'resumes/{user_id}_{resume_id}.pdf'
+        if not os.path.exists(resume_path):
+            return jsonify({'error': 'Resume not found'}), 404
+        
+        os.remove(resume_path)
+        return jsonify({'message': 'Resume deleted successfully'}), 200
+    except Exception as e:
+        logging.error(f"Delete resume error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
 @app.route('/api/profile', methods=['GET'])
 @token_required
 def get_profile(user_id):
-    response = get_profile_data(user_id)
-    return jsonify(response)
+    try:
+        profile_data = get_profile_data(user_id)
+        return jsonify(profile_data)
+    except Exception as e:
+        logging.error(f"Get profile error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 
-@app.route('/api/profile', methods=['PUT'])
+@app.route('/api/profile', methods=['POST'])
 @token_required
 def update_profile(user_id):
     
@@ -399,64 +478,103 @@ def update_profile(user_id):
 
         # Commit transaction
         db.session.commit()
-        return jsonify({"message": "Profile updated successfully"})
-
+        return jsonify({'message': 'Profile updated successfully'}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        logging.error(f"Update profile error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
-
-@app.route('/api/generateInterviewQuestions', methods=['POST'])
+@app.route('/api/profile/generateFromResume', methods=['POST'])
 @token_required
-def get_questions(user_id):
+def generate_profile_from_resume(user_id):
+    try:
+        resume_name = request.json.get('resume_name')
+        if not resume_name:
+            return jsonify({'error': 'Resume name is required'}), 400
+            
+        # Implementation for generating profile from resume
+        #TODO
+        return jsonify({'message': 'Profile generated successfully'}), 200
+    except Exception as e:
+        logging.error(f"Generate profile error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/job/simplify', methods=['POST'])
+@token_required
+def simplify_job(user_id):
     try:
         job_description = request.json.get('job_description')
         if not job_description:
             return jsonify({'error': 'Job description is required'}), 400
-        resume = get_profile_data(user_id)
-        questions = generate_interview_questions(job_description, resume)
-        return jsonify({"questions" : questions})
-    except Exception as e:
-        print(str(e))
-        return jsonify({"error" : str(e)}), 500
-
-
-@app.route('/api/evaluateInterview', methods=['POST'])
-@token_required
-def evaluate(user_id):
-    try:
             
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-
-        job_description = data.get('job_description')
-        if not job_description:
-            return jsonify({'error': 'Job description is required'}), 400
-        responses = data.get('questions_responses', [])
-        resume = get_profile_data(user_id)
-        evaluation = evaluate_interview(responses, job_description, resume)
-        return jsonify({"evaluation" : evaluation})
+        prompt_extract = PromptTemplate.from_template(
+        """
+        ### SCRAPED TEXT FROM WEBSITE:
+        {job_profile}
+        ### INSTRUCTION:
+        The scraped text is from the career's page of a website.
+        Your job is to extract the job posting and return them in JSON format containing the following keys:`company`,`role`,`experience`,`skills`,`description`.
+        Ensure that the `skills` key contains a list of skills.
+        Only return the valid JSON.
+        ### VALID JSON (NO PREAMBLE):
+        """
+    )
+        chain = prompt_extract | llm
+        response = chain.invoke(input={"job_profile": job_description})
+        json_parser = JsonOutputParser()
+        json_job_posting = json_parser.parse(response.content)
+        return jsonify(json_job_posting), 200
     except Exception as e:
-        print(str(e))
-        return jsonify({"error" : str(e)}), 500
-
-from pathlib import Path
-from generateResume import *
-
-
-@app.route('/api/generateResume', methods=['POST'])
+        logging.error(f"Simplify job error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+@app.route('/api/job/checkProfileScore', methods=['POST'])
 @token_required
-def generate_resume(user_id):
+def check_profile_score(user_id):
     try:
+        job_data = request.json.get('job_data')
+        if not job_data:
+            return jsonify({'error': 'Job data is required'}), 400
             
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
+        resume = get_profile_data(user_id)
+        prompt_final = PromptTemplate.from_template(
+        """
+        ### JOB POSTING:
+        {job_posting}
+        ### CANDIDATE RESUME: 
+        {resume}
+        ### INSTRUCTION:
+        Your task is to check whether the candidate's resume matches the job posting. 
+        Analyze and provide:
+        1. Overall match percentage
+        2. Key matching skills and qualifications
+        3. Notable gaps or missing requirements
+        4. Recommendations for improvement
+        5. Strengths that stand out
 
-        job_description = data.get('job_description')
-        if not job_description:
-            return jsonify({'error': 'Job description is required'}), 400
+        Return a detailed analysis focusing on how well the candidate's qualifications align with the job requirements.
+        """
+    )
+
+        chain_final = prompt_final | llm
+        answer = chain_final.invoke(
+            input={
+                "job_posting": job_data,
+                "resume": resume,
+            }
+        )
+        return jsonify({'analysis' : answer}), 200
+    except Exception as e:
+        logging.error(f"Check profile score error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/job/generateTailoredResume', methods=['POST'])
+@token_required
+def generate_tailored_resume(user_id):
+    try:
+        job_data = request.json.get('job_data')
+        if not job_data:
+            return jsonify({'error': 'Job data is required'}), 400
         resume = get_profile_data(user_id)
 
         output_dir = Path("generated_resumes")
@@ -467,9 +585,9 @@ def generate_resume(user_id):
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
         file_names = f"{user_id}_{timestamp}."
 
-        enhanced_data = enhance_all_descriptions(resume, job_description)
+        enhanced_data = enhance_all_descriptions(resume, job_data)
 
-        latex_content = generate_latex(CANDIDATE_DATA, ENHANCED_DATA, user.name)
+        latex_content = generate_latex(resume, enhanced_data, user.name)
         latex_filepath = output_dir / f"{file_names}tex"
 
         latex_filepath.write_text(latex_content, encoding='utf-8')
@@ -484,12 +602,65 @@ def generate_resume(user_id):
                 )
         else:
             return jsonify({"error" : "Some error occured while generating resume pdf"}), 500 
-
-        
     except Exception as e:
-        print(str(e))
-        return jsonify({"error" : str(e)}), 500
+        logging.error(f"Generate tailored resume error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+@app.route('/api/job/flashCards', methods=['POST'])
+@token_required
+def generate_flash_cards(user_id):
+    try:
+        job_data = request.json.get('job_data')
+        if not job_data:
+            return jsonify({'error': 'Job data is required'}), 400
+        resume = format_json(get_profile_data(user_id))
+        flashcard_system = FlashcardSystem()
+        study_plan = flashcard_system.generate_study_plan(
+            job_data,
+            resume
+        )
+        return jsonify({'study_plan': study_plan}), 200
+    except Exception as e:
+        logging.error(f"Generate flash cards error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
+@app.route('/api/interview/generateQuestions', methods=['POST'])
+@token_required
+def generate_questions(user_id):
+    try:
+        job_data = request.json.get('job_description')
+        if not job_data:
+            return jsonify({'error': 'Job description is required'}), 400
+            
+        resume = get_profile_data(user_id)
+        questions = generate_interview_questions(job_data, resume)
+        return jsonify({"questions" : questions}),200
+    except Exception as e:
+        logging.error(f"Generate interview questions error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+
+
+@app.route('/api/interview/evaluateResponses', methods=['POST'])
+@token_required
+def evaluate_responses(user_id):
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        job_description = data.get('job_description')
+        responses = data.get('questions_responses', [])
+        
+        if not job_description or not responses:
+            return jsonify({'error': 'Job description and responses are required'}), 400
+            
+        resume = get_profile_data(user_id)
+        evaluation = evaluate_interview(responses, job_description, resume)
+        return jsonify({'evaluation': evaluation}), 200
+    except Exception as e:
+        logging.error(f"Evaluate responses error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

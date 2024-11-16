@@ -1,186 +1,26 @@
 package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
+import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
+import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
+import com.jainhardik120.jobbuddy.data.remote.Resume
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import com.jainhardik120.jobbuddy.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.serialization.Serializable
+import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import okio.FileNotFoundException
 import javax.inject.Inject
 
-
-@Serializable
-data class Skill(
-    val skill: String,
-    val level: Int
-)
-
-@Serializable
-data class Project(
-    val name: String,
-    val techStack: String,
-    val demoLink: String,
-    val startDate: InputType.Date,
-    val endDate: InputType.Date,
-    val description: String
-)
-
-@Serializable
-data class Experience(
-    val title: String,
-    val company: String,
-    val startDate: InputType.Date,
-    val endDate: InputType.Date,
-    val description: String
-)
-
-@Serializable
-data class Achievement(
-    val title: String,
-    val description: String
-)
-
-
-@Serializable
-data class Education(
-    val institution: String,
-    val degree: String,
-    val startDate: InputType.Date,
-    val endDate: InputType.Date
-)
-
-@Serializable
-data class ProfileLink(
-    val platform: String,
-    val url: String
-)
-
-@Serializable
-data class ContactDetail(
-    val type: String,
-    val value: String
-)
-
-fun Skill.toInputModel(): InputModel.Skill {
-    return InputModel.Skill(skill = this.skill, level = this.level)
-}
-
-fun Project.toInputModel(): InputModel.Project {
-    return InputModel.Project(
-        name = this.name,
-        techStack = this.techStack,
-        demoLink = this.demoLink,
-        startDate = this.startDate,
-        endDate = this.endDate,
-        description = this.description
-    )
-}
-
-fun Experience.toInputModel(): InputModel.Experience {
-    return InputModel.Experience(
-        title = this.title,
-        company = this.company,
-        startDate = this.startDate,
-        endDate = this.endDate,
-        description = this.description
-    )
-}
-
-fun Achievement.toInputModel(): InputModel.Achievement {
-    return InputModel.Achievement(
-        title = this.title,
-        description = this.description
-    )
-}
-
-fun Education.toInputModel(): InputModel.Education {
-    return InputModel.Education(
-        institution = this.institution,
-        degree = this.degree,
-        startDate = this.startDate,
-        endDate = this.endDate
-    )
-}
-
-fun ProfileLink.toInputModel(): InputModel.ProfileLink {
-    return InputModel.ProfileLink(
-        platform = this.platform,
-        url = this.url
-    )
-}
-
-fun ContactDetail.toInputModel(): InputModel.ContactDetail {
-    return InputModel.ContactDetail(
-        type = this.type,
-        value = this.value
-    )
-}
-
-fun InputModel.Skill.toData(): Skill {
-    return Skill(
-        (this.fields["skill"]?.type as InputType.Text).value,
-        (this.fields["level"]?.type as InputType.Number).value
-    )
-}
-
-// Mapper functions for Project
-fun InputModel.Project.toData(): Project {
-    return Project(
-        (this.fields["name"]?.type as InputType.Text).value,
-        (this.fields["techStack"]?.type as InputType.Text).value,
-        (this.fields["demoLink"]?.type as InputType.Text).value,
-        (this.fields["startDate"]?.type as InputType.Date),
-        (this.fields["endDate"]?.type as InputType.Date),
-        (this.fields["description"]?.type as InputType.Text).value
-    )
-}
-
-// Mapper functions for Experience
-fun InputModel.Experience.toData(): Experience {
-    return Experience(
-        (this.fields["title"]?.type as InputType.Text).value,
-        (this.fields["company"]?.type as InputType.Text).value,
-        (this.fields["startDate"]?.type as InputType.Date),
-        (this.fields["endDate"]?.type as InputType.Date),
-        (this.fields["description"]?.type as InputType.Text).value
-    )
-}
-
-// Mapper functions for Achievement
-fun InputModel.Achievement.toData(): Achievement {
-    return Achievement(
-        (this.fields["title"]?.type as InputType.Text).value,
-        (this.fields["description"]?.type as InputType.Text).value
-    )
-}
-
-// Mapper functions for Education
-fun InputModel.Education.toData(): Education {
-    return Education(
-        (this.fields["institution"]?.type as InputType.Text).value,
-        (this.fields["degree"]?.type as InputType.Text).value,
-        (this.fields["startDate"]?.type as InputType.Date),
-        (this.fields["endDate"]?.type as InputType.Date)
-    )
-}
-
-// Mapper functions for ProfileLink
-fun InputModel.ProfileLink.toData(): ProfileLink {
-    return ProfileLink(
-        (this.fields["platform"]?.type as InputType.Text).value,
-        (this.fields["url"]?.type as InputType.Text).value
-    )
-}
-
-// Mapper functions for ContactDetail
-fun InputModel.ContactDetail.toData(): ContactDetail {
-    return ContactDetail(
-        (this.fields["type"]?.type as InputType.Text).value,
-        (this.fields["value"]?.type as InputType.Text).value
-    )
-}
 
 @HiltViewModel
 class EditUserDetailsViewModel @Inject constructor(
@@ -188,6 +28,69 @@ class EditUserDetailsViewModel @Inject constructor(
 ) : BaseViewModel() {
     private val _state = mutableStateOf(EditUserDetailsState())
     val state: State<EditUserDetailsState> = _state
+
+    private var uploadJob: Job? = null
+
+    init {
+        getInitialData()
+        updateResumeList()
+    }
+
+    private fun updateResumeList() {
+        makeApiCall({
+            api.listUploadedResumes()
+        }) {
+            _state.value = _state.value.copy(
+                userResumes = it.resumes
+            )
+        }
+    }
+
+    fun uploadFile(contentUri: Uri) {
+        uploadJob = api.uploadResume(contentUri)
+            .onStart {
+                _state.value = _state.value.copy(
+                    isUploading = true,
+                    progress = 0f
+                )
+            }
+            .onEach { progressUpdate ->
+                _state.value = _state.value.copy(
+                    progress = progressUpdate.bytesSent / progressUpdate.totalBytes.toFloat()
+                )
+            }
+            .onCompletion { cause ->
+                if (cause == null) {
+                    _state.value = _state.value.copy(
+                        isUploading = false
+                    )
+                    updateResumeList()
+                } else if (cause is CancellationException) {
+                    _state.value = _state.value.copy(
+                        isUploading = false,
+                        progress = 0f
+                    )
+                    sendUiEvent(UiEvent.ShowToast("Upload was cancelled"))
+                }
+            }
+            .catch { cause ->
+                val message = when (cause) {
+                    is OutOfMemoryError -> "File too large!"
+                    is FileNotFoundException -> "File not found!"
+                    is UnresolvedAddressException -> "No internet!"
+                    else -> "Something went wrong!"
+                }
+                sendUiEvent(UiEvent.ShowToast(message))
+                _state.value = _state.value.copy(
+                    isUploading = false
+                )
+            }
+            .launchIn(viewModelScope)
+    }
+
+    fun cancelUpload() {
+        uploadJob?.cancel()
+    }
 
     private fun getInitialData() {
         makeApiCall({
@@ -205,11 +108,6 @@ class EditUserDetailsViewModel @Inject constructor(
         }
     }
 
-
-    init {
-        getInitialData()
-    }
-
     private fun saveUserDetails() {
         makeApiCall({
             api.updateProfileDetails(
@@ -223,7 +121,7 @@ class EditUserDetailsViewModel @Inject constructor(
                     contactDetails = _state.value.contactDetails.map { it.toData() }
                 )
             )
-        }) {response->
+        }) { response ->
             sendUiEvent(UiEvent.ShowToast(response.message))
         }
     }
@@ -248,7 +146,6 @@ class EditUserDetailsViewModel @Inject constructor(
             is InputModel.ContactDetail -> state.copy(contactDetails = state.contactDetails + item)
         }
     }
-
 
     private fun removeFromList(state: EditUserDetailsState, index: Int) {
         _state.value = when (index) {
@@ -346,6 +243,9 @@ data class EditUserDetailsState(
     val achievements: List<InputModel.Achievement> = emptyList(),
     val education: List<InputModel.Education> = emptyList(),
     val profileLinks: List<InputModel.ProfileLink> = emptyList(),
-    val contactDetails: List<InputModel.ContactDetail> = emptyList()
+    val contactDetails: List<InputModel.ContactDetail> = emptyList(),
+    val userResumes: List<Resume> = emptyList(),
+    val isUploading: Boolean = false,
+    val progress: Float = 0f
 )
 

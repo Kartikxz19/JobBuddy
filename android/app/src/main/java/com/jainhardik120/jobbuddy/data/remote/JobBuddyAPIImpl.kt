@@ -1,18 +1,6 @@
 package com.jainhardik120.jobbuddy.data.remote
 
 import android.net.Uri
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.headers
-import io.ktor.client.request.request
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HeadersBuilder
-import io.ktor.http.HttpMethod
-import io.ktor.http.contentType
 import com.jainhardik120.jobbuddy.Result
 import com.jainhardik120.jobbuddy.data.FileReader
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
@@ -20,19 +8,30 @@ import com.jainhardik120.jobbuddy.data.dto.EvaluationResponse
 import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
 import com.jainhardik120.jobbuddy.data.dto.InterviewQuestions
+import com.jainhardik120.jobbuddy.data.dto.JobPosting
 import com.jainhardik120.jobbuddy.data.dto.LoginResponse
 import com.jainhardik120.jobbuddy.data.dto.MessageError
 import com.jainhardik120.jobbuddy.data.dto.MessageResponse
 import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
-import com.jainhardik120.jobbuddy.data.dto.ResumeScoreRequest
 import com.jainhardik120.jobbuddy.data.dto.ResumeScoreResponse
-import com.jainhardik120.jobbuddy.data.dto.ResumeStatusResponse
-import kotlinx.coroutines.flow.Flow
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.onUpload
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.headers
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.Headers
+import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 
 
@@ -41,10 +40,6 @@ class JobBuddyAPIImpl(
     private val keyValueStorage: KeyValueStorage,
     private val fileReader: FileReader
 ) : JobBuddyAPI {
-
-    companion object {
-        private const val TAG = "JobBuddyAPIImpl"
-    }
 
     private suspend inline fun <T, reified R> performApiRequest(
         call: () -> T
@@ -97,18 +92,16 @@ class JobBuddyAPIImpl(
         }
     }
 
-    override suspend fun checkResumeScore(request: ResumeScoreRequest): Result<ResumeScoreResponse, MessageError> {
+    override suspend fun listUploadedResumes(): Result<Resumes, MessageError> {
         return performApiRequest {
-            requestBuilder(APIRoutes.RESUME_SCORE_ROUTE, HttpMethod.Post, request)
+            requestBuilder(APIRoutes.RESUME_ROUTE, HttpMethod.Get)
         }
     }
 
-    override suspend fun getResumeStatus(): Result<ResumeStatusResponse, MessageError> {
+
+    override suspend fun deleteResume(resumeId: String): Result<MessageResponse, MessageError> {
         return performApiRequest {
-            requestBuilder(
-                url = APIRoutes.RESUME_STATUS_ROUTE,
-                method = HttpMethod.Get
-            )
+            requestBuilder("${APIRoutes.RESUME_ROUTE}/$resumeId", HttpMethod.Delete)
         }
     }
 
@@ -120,14 +113,56 @@ class JobBuddyAPIImpl(
 
     override suspend fun updateProfileDetails(data: ProfileDetails): Result<MessageResponse, MessageError> {
         return performApiRequest {
-            requestBuilder(APIRoutes.PROFILE_ROUTE, HttpMethod.Put, data)
+            requestBuilder(APIRoutes.PROFILE_ROUTE, HttpMethod.Post, data)
         }
     }
 
-    override suspend fun getInterviewQuestions(jobDescription: String): Result<InterviewQuestions, MessageError> {
+    override suspend fun generateProfileFromResume(resumeId: String): Result<ProfileDetails, MessageError> {
         return performApiRequest {
             requestBuilder(
-                APIRoutes.GENERATE_QUESTIONS_ROUTE, HttpMethod.Post, mapOf("job_description" to jobDescription)
+                APIRoutes.GENERATE_PROFILE_RESUME_ROUTE, HttpMethod.Post, mapOf(
+                    "resume_name" to resumeId
+                )
+            )
+        }
+    }
+
+    override suspend fun simplifyJobData(jobDescription: String): Result<JobPosting, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                APIRoutes.SIMPLIFY_JOB_ROUTE, HttpMethod.Post, mapOf(
+                    "job_description" to jobDescription
+                )
+            )
+        }
+    }
+
+    override suspend fun checkResumeScore(jobData: JobPosting): Result<ResumeScoreResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                APIRoutes.CHECK_PROFILE_SCORE_ROUTE, HttpMethod.Post, mapOf(
+                    "job_data" to jobData
+                )
+            )
+        }
+    }
+
+    override suspend fun generateFlashCards(jobData: JobPosting): Result<StudyPlanResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                APIRoutes.FLASH_CARDS_ROUTE, HttpMethod.Post, mapOf(
+                    "job_data" to jobData
+                )
+            )
+        }
+    }
+
+    override suspend fun getInterviewQuestions(jobData: JobPosting): Result<InterviewQuestions, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                APIRoutes.GENERATE_QUESTIONS_ROUTE,
+                HttpMethod.Post,
+                mapOf("job_description" to jobData)
             )
         }
     }
@@ -141,7 +176,7 @@ class JobBuddyAPIImpl(
     override fun uploadResume(contentUri: Uri): Flow<ProgressUpdate> = channelFlow {
         val info = fileReader.uriToFileInfo(contentUri)
         client.submitFormWithBinaryData(
-            url = APIRoutes.RESUME_UPLOAD_ROUTE,
+            url = APIRoutes.RESUME_ROUTE,
             formData = formData {
                 append("resume_file", info.bytes, Headers.build {
                     append(HttpHeaders.ContentType, info.mimeType)
@@ -159,6 +194,7 @@ class JobBuddyAPIImpl(
             }
         }
     }
+
 }
 
 

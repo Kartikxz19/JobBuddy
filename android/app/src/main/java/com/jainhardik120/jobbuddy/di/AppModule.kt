@@ -1,11 +1,14 @@
 package com.jainhardik120.jobbuddy.di
 
+import android.app.Application
 import android.content.Context
+import androidx.room.Room
 import com.jainhardik120.jobbuddy.R
+import com.jainhardik120.jobbuddy.data.FileReader
+import com.jainhardik120.jobbuddy.data.KeyValueStorage
+import com.jainhardik120.jobbuddy.data.local.JBDatabase
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPIImpl
-import com.jainhardik120.jobbuddy.data.KeyValueStorage
-import com.jainhardik120.jobbuddy.data.FileReader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -74,5 +77,13 @@ object AppModule {
         return JobBuddyAPIImpl(client, keyValueStorage, fileReader = FileReader(context))
     }
 
+    @Provides
+    @Singleton
+    fun provideDatabase(
+        app: Application
+    ): JBDatabase {
+        return Room.databaseBuilder(app, JBDatabase::class.java, "job_buddy_database")
+            .fallbackToDestructiveMigration().build()
+    }
 
 }

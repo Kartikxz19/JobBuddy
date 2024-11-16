@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class InterviewEvaluationRequest(
     @SerialName("job_description")
-    val jobDescription: String,
+    val job: JobPosting,
     @SerialName("questions_responses")
     val questionsResponses : List<QuestionResponse>
 )
