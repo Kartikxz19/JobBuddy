@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jobbuddy.Result
-import com.jainhardik120.jobbuddy.data.remote.dto.MessageError
+import com.jainhardik120.jobbuddy.data.dto.MessageError
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch

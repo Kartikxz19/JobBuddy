@@ -13,7 +13,7 @@ import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.jainhardik120.gatepay.ui.presentation.screens.login.LoginEvent
 import com.jainhardik120.jobbuddy.Constants
-import com.jainhardik120.jobbuddy.data.remote.dto.GoogleLoginRequest
+import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
 import com.jainhardik120.jobbuddy.ui.BaseViewModel

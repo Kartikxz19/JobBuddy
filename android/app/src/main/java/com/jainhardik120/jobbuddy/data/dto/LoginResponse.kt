@@ -1,4 +1,4 @@
-package com.jainhardik120.jobbuddy.data.remote.dto
+package com.jainhardik120.jobbuddy.data.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

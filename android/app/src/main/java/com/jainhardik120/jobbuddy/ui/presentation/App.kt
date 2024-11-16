@@ -38,12 +38,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.jainhardik120.jobbuddy.ui.presentation.screens.interview.VirtualInterviewScreen
-import com.jainhardik120.jobbuddy.ui.presentation.screens.interview.VirtualInterviewViewModel
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.EditUserDetailsViewModel
 import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.ProfileUpdateScreen
 import dev.jeziellago.compose.markdowntext.MarkdownText
@@ -214,7 +212,11 @@ fun App() {
         composable(AppRoutes.VirtualInterviewScreen.route) {
             VirtualInterviewScreen(navController = navController)
         }
+
+        composable(AppRoutes.JobDetailsScreen.route){
+            // Here we will enter job description, and then generate the content from backend and show relevant options to user
+
+        }
     }
 }
-
 

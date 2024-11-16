@@ -2,11 +2,10 @@ package com.jainhardik120.jobbuddy.ui.presentation
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
-import com.jainhardik120.jobbuddy.data.remote.ResumeScoreRequest
+import com.jainhardik120.jobbuddy.data.dto.ResumeScoreRequest
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.util.network.UnresolvedAddressException

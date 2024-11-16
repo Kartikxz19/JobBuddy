@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from google.oauth2 import id_token
 from dotenv import load_dotenv
@@ -437,6 +437,55 @@ def evaluate(user_id):
         resume = get_profile_data(user_id)
         evaluation = evaluate_interview(responses, job_description, resume)
         return jsonify({"evaluation" : evaluation})
+    except Exception as e:
+        print(str(e))
+        return jsonify({"error" : str(e)}), 500
+
+from pathlib import Path
+from generateResume import *
+
+
+@app.route('/api/generateResume', methods=['POST'])
+@token_required
+def generate_resume(user_id):
+    try:
+            
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        job_description = data.get('job_description')
+        if not job_description:
+            return jsonify({'error': 'Job description is required'}), 400
+        resume = get_profile_data(user_id)
+
+        output_dir = Path("generated_resumes")
+        output_dir.mkdir(exist_ok=True)
+
+        user = User.query.filter_by(id=user_id).first()
+
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        file_names = f"{user_id}_{timestamp}."
+
+        enhanced_data = enhance_all_descriptions(resume, job_description)
+
+        latex_content = generate_latex(CANDIDATE_DATA, ENHANCED_DATA, user.name)
+        latex_filepath = output_dir / f"{file_names}tex"
+
+        latex_filepath.write_text(latex_content, encoding='utf-8')
+        pdf_filepath = output_dir / f"{file_names}pdf"
+
+        if convert_latex_to_pdf(str(latex_filepath), str(pdf_filepath)):
+            return send_file(
+                    pdf_filepath,
+                    mimetype='application/pdf',
+                    as_attachment=True,
+                    download_name=f"{user.name}_Resume_{timestamp}.pdf"
+                )
+        else:
+            return jsonify({"error" : "Some error occured while generating resume pdf"}), 500 
+
+        
     except Exception as e:
         print(str(e))
         return jsonify({"error" : str(e)}), 500

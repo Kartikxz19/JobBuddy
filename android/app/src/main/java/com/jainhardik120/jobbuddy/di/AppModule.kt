@@ -5,7 +5,7 @@ import com.jainhardik120.jobbuddy.R
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPIImpl
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
-import com.jainhardik120.jobbuddy.data.remote.FileReader
+import com.jainhardik120.jobbuddy.data.FileReader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

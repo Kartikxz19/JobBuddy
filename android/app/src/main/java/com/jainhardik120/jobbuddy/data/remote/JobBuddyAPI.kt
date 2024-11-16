@@ -2,19 +2,18 @@ package com.jainhardik120.jobbuddy.data.remote
 
 import android.net.Uri
 import com.jainhardik120.jobbuddy.Result
-import com.jainhardik120.jobbuddy.data.remote.dto.GoogleLoginRequest
-import com.jainhardik120.jobbuddy.data.remote.dto.LoginResponse
-import com.jainhardik120.jobbuddy.data.remote.dto.MessageError
-import com.jainhardik120.jobbuddy.data.remote.dto.MessageResponse
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.Achievement
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.ContactDetail
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.Education
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.Experience
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.ProfileLink
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.Project
-import com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate.Skill
+import com.jainhardik120.jobbuddy.data.dto.EvaluationResponse
+import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewQuestions
+import com.jainhardik120.jobbuddy.data.dto.LoginResponse
+import com.jainhardik120.jobbuddy.data.dto.MessageError
+import com.jainhardik120.jobbuddy.data.dto.MessageResponse
+import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
+import com.jainhardik120.jobbuddy.data.dto.ResumeScoreRequest
+import com.jainhardik120.jobbuddy.data.dto.ResumeScoreResponse
+import com.jainhardik120.jobbuddy.data.dto.ResumeStatusResponse
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Serializable
 
 interface JobBuddyAPI {
     suspend fun loginGoogle(request: GoogleLoginRequest): Result<LoginResponse, MessageError>
@@ -35,28 +34,3 @@ interface JobBuddyAPI {
 
 }
 
-@Serializable
-data class EvaluationResponse(
-    val evaluation: String
-)
-
-data class ProgressUpdate(
-    val bytesSent: Long,
-    val totalBytes: Long
-)
-
-@Serializable
-data class ProfileDetails(
-    val achievements: List<Achievement>,
-    val contactDetails: List<ContactDetail>,
-    val education: List<Education>,
-    val experience: List<Experience>,
-    val profileLinks: List<ProfileLink>,
-    val projects: List<Project>,
-    val skills: List<Skill>
-)
-
-@Serializable
-data class InterviewQuestions(
-    val questions: List<String>
-)

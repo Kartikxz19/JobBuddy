@@ -1,4 +1,4 @@
-package com.jainhardik120.jobbuddy.data.remote
+package com.jainhardik120.jobbuddy.data
 
 import android.content.Context
 import android.net.Uri
@@ -32,3 +32,10 @@ class FileReader(
         }
     }
 }
+
+
+class FileInfo(
+    val name: String,
+    val mimeType: String,
+    val bytes: ByteArray
+)

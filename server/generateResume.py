@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from typing import Dict, Optional
 from pathlib import Path
+
 # Load environment variables
 load_dotenv()
 
@@ -21,8 +22,7 @@ llm = ChatGroq(
 )
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 # Sample job description
@@ -36,6 +36,45 @@ Requirements:
 - Track record of leading development teams
 - Excellence in system design and optimization
 """
+
+ENHANCED_DATA = {
+    "experience": [
+        {
+            "title": "Senior Software Engineer",
+            "points": [
+                "Led a team of 5 engineers, driving full-stack development projects and fostering a culture of collaboration and innovation.",
+                "Designed and implemented microservices architecture, resulting in a 40% reduction in deployment time and improved system scalability.",
+                "Mentored junior engineers, providing guidance on best practices and code reviews to ensure high-quality code delivery."
+            ]
+        },
+        {
+            "title": "Software Developer",
+            "points": [
+                "Developed and maintained multiple web applications using React, Node.js, and MongoDB, ensuring high performance and reliability.",
+                "Implemented CI/CD pipeline, automating testing and deployment processes to reduce manual errors and improve delivery speed.",
+                "Collaborated with cross-functional teams to identify and prioritize project requirements, ensuring alignment with business objectives."
+            ]
+        }
+    ],
+    "projects": [
+        {
+            "name": "E-commerce Platform",
+            "points": [
+                "Designed and developed a full-stack e-commerce platform using React, Node.js, and MongoDB, featuring user authentication, product catalog, shopping cart, and payment integration.",
+                "Implemented a scalable and secure payment gateway, ensuring seamless transactions and protecting sensitive user data.",
+                "Optimized platform performance, achieving a 30% reduction in page load times and improving overall user experience."
+            ]
+        },
+        {
+            "name": "Task Management App",
+            "points": [
+                "Built a collaborative task management application using Python, Flask, and PostgreSQL, featuring real-time updates and team workspace functionality.",
+                "Designed and implemented a robust database schema, ensuring data consistency and supporting high-volume data storage.",
+                "Developed a RESTful API, providing a flexible and scalable interface for integrating with third-party services and applications."
+            ]
+        }
+    ]
+}
 
 # Candidate data
 CANDIDATE_DATA = {
@@ -147,6 +186,7 @@ def enhance_all_descriptions(candidate_data, job_description):
     """
 
     response = llm.invoke(prompt)
+    print(response.content)
 
     # Extract JSON data from response using regex to capture text between the first and last curly braces
     json_match = re.search(r"\{.*\}", response.content, re.DOTALL)
@@ -155,105 +195,186 @@ def enhance_all_descriptions(candidate_data, job_description):
         try:
             enhanced_data = json.loads(json_data)
             return enhanced_data
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             print("Error parsing AI response. Using original descriptions.")
+            print(str(e))
             return None
     else:
         print("JSON data not found in the AI response.")
         return None
-
-
-def format_date(date_dict):
-    """Convert date dictionary to formatted string."""
-    months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ]
-    return f"{months[date_dict['month']-1]} {date_dict['year']}"
-
-def generate_latex(candidate_data, enhanced_data):
-    """Generate LaTeX content from candidate data."""
+    
+def generate_latex(candidate_data, enhanced_data, candidate_name):
+    """Generate LaTeX content from candidate data matching the given resume format."""
     latex_content = r"""
-    \documentclass[a4paper,13pt]{article}
-    \usepackage[scale=0.92]{geometry}
-    \usepackage[utf8]{inputenc}
-    \usepackage{enumitem}
-    \usepackage{hyperref}
-    \usepackage{parskip}
-    \usepackage{titlesec}
-    \definecolor{linkcolour}{rgb}{0,0.2,0.6}
-    \hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour}
-    
-    \titlespacing{\section}{0pt}{6pt}{3pt}
-    \titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
-    
-    \begin{document}
-    \pagestyle{empty}
+\documentclass[a4paper,13pt]{article}
+\usepackage{url}
+\usepackage{parskip}   
+\RequirePackage{color}
+\RequirePackage{graphicx}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[scale=0.92]{geometry}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\newcolumntype{C}{>{\centering\arraybackslash}X} 
+\usepackage{supertabular}
+\usepackage{tabularx}
+\newlength{\fullcollw}
+\setlength{\fullcollw}{0.47\textwidth}
+\usepackage{titlesec}                
+\usepackage{multicol}
+\usepackage{multirow}
+\titlespacing{\section}{0pt}{6pt}{6pt}
+\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\usepackage[style=authoryear,sorting=ynt,maxbibnames=2]{biblatex}
+\usepackage[unicode,draft=false]{hyperref}
+\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour}
+\addbibresource{citations.bib}
+\setlength\bibitemsep{0.8em}
+\usepackage{fontawesome5}
 
-    % Header with name and contact details
-    \parbox{\dimexpr\linewidth\relax}{
-    \begin{tabularx}{\linewidth}{@{} C @{}}
-    \Huge{{""" + candidate_data["contactDetails"][0]["value"] + r"""}} \\[7.5pt]
-    \small{
-    """
+\begin{document}
+
+\pagestyle{empty} 
+
+\parbox{\dimexpr\linewidth\relax}{
+\begin{tabularx}{\linewidth}{@{} C @{}}
+\Huge{""" + candidate_name + r"""} \\[7.5pt]
+\small{"""
+# Contact mapping with default icon for unknown types
+    contact_mapping = {
+        "email": (r"\faEnvelope", "mailto:"),
+        "phone": (r"\faMobile", "tel:"),
+        "github": (r"\faGithub", "https://github.com/"),
+        "linkedin": (r"\faLinkedin", "https://linkedin.com/in/"),
+        "website": (r"\faGlobe", ""),
+        "portfolio": (r"\faGlobe", ""),
+        "location": (r"\faMapMarker", ""),  # Added location type
+    }
     
-    # Adding contact details with plain text and links
-    for contact in candidate_data["contactDetails"][1:]:
+    # Default icon for unknown types
+    default_icon = r"\faLink"
+    
+    contact_items = []
+    
+    # Process contact details
+    for contact in candidate_data["contactDetails"]:
+        contact_type = contact["type"].lower()
         value = contact["value"]
-        if "email" in contact["type"].lower():
-            value = f"\\href{{mailto:{value}}}{{{value}}}"
-        elif "phone" in contact["type"].lower():
-            value = f"Phone: {value}"
-        latex_content += f"{value} \\ $ | $ \\ "
+        username = value.split("/")[-1] if "/" in value else value
+        
+        if contact_type in contact_mapping:
+            icon, prefix = contact_mapping[contact_type]
+            contact_items.append(
+                f"\\href{{{prefix}{username}}}{{\\raisebox{{-0.05\\height}}{{{icon}}}\\ {username}}}"
+            )
+        else:
+            # For unknown contact types, use default icon without prefix
+            contact_items.append(
+                f"\\raisebox{{-0.05\\height}}{{{default_icon}}}\\ {username}"
+            )
+    
+    # Process profile links
+    platform_to_type = {
+        "LinkedIn": "linkedin",
+        "GitHub": "github",
+        "Portfolio": "portfolio"
+    }
+    
+    for profile in candidate_data["profileLinks"]:
+        platform = profile["platform"]
+        url = profile["url"]
+        username = url.split("/")[-1]
+        
+        contact_type = platform_to_type.get(platform, "").lower()
+        if contact_type in contact_mapping:
+            icon, _ = contact_mapping[contact_type]
+        else:
+            # For unknown platforms, use default icon
+            icon = default_icon
+            
+        contact_items.append(
+            f"\\href{{{url}}}{{\\raisebox{{-0.05\\height}}{{{icon}}}\\ {username}}}"
+        )
+    
+    latex_content += " \\ $|$ \\ ".join(contact_items)
+    latex_content += r"""} \\
+\end{tabularx}
+}"""
 
-    # Adding profile links as plain text links
-    for link in candidate_data["profileLinks"]:
-        platform_name = link["platform"].capitalize()
-        latex_content += f"\\href{{{link['url']}}}{{{platform_name}: {link['url']}}} \\ $ | $ \\ "
-    latex_content = latex_content.rstrip(" $ | $ \\ ") + "} \\\\ \n\\end{tabularx}\n}\n\n"
-
-    # Skills Section
-    latex_content += "\\section*{Skills}\n" + ", ".join(
-        [f"{skill['skill']} ({skill['level']}/5)" for skill in candidate_data["skills"]]
-    ) + "\n\n"
-
-    # Professional Experience Section
-    latex_content += "\\section*{Professional Experience}\n"
-    for i, exp in enumerate(candidate_data["experience"]):
-        latex_content += f"\\subsection*{{{exp['title']} - {exp['company']}}}\n"
-        latex_content += f"{format_date(exp['startDate'])} - {format_date(exp['endDate'])}\n\n"
-        if enhanced_data and i < len(enhanced_data["experience"]):
-            latex_content += "\\begin{itemize}[itemsep=1pt]\n"
-            for point in enhanced_data["experience"][i]["points"]:
-                latex_content += f"  \\item {point}\n"
-            latex_content += "\\end{itemize}\n"
+    # Experience Section
+    latex_content += r"\section{Experiences}" + "\n\n"
+    for exp in candidate_data["experience"]:
+        latex_content += r"\begin{tabularx}{\linewidth}{ @{}l r@{} }" + "\n"
+        end_date = "Present" if exp["endDate"]["month"] is None else f"{exp['endDate']['month']}/{exp['endDate']['year']}"
+        latex_content += f"\\textbf{{{exp['company']}}} \\small{{$|$ {exp['title']}}} & \\hfill {{{exp['startDate']['month']}/{exp['startDate']['year']} - {end_date}}} \\\\[3.75pt]\n"
+        latex_content += r"\multicolumn{2}{@{}X@{}}{" + "\n"
+        latex_content += r"\begin{itemize}[itemsep=1pt, parsep=0pt]" + "\n"
+        
+        # Find matching enhanced experience points
+        enhanced_points = []
+        for enhanced_exp in enhanced_data["experience"]:
+            if enhanced_exp["title"] == exp["title"]:
+                enhanced_points = enhanced_exp["points"]
+                break
+        
+        # Use enhanced points if available, otherwise use description
+        points = enhanced_points if enhanced_points else [exp["description"]]
+        for point in points:
+            latex_content += f"    \\item {point}\n"
+        
+        latex_content += r"\end{itemize}" + "\n"
+        latex_content += r"}  \\" + "\n"
+        latex_content += r"\end{tabularx}" + "\n\n"
 
     # Projects Section
-    latex_content += "\\section*{Projects}\n"
-    for i, project in enumerate(candidate_data["projects"]):
-        latex_content += f"\\subsection*{{{project['name']}}} ({project['techStack']})\n"
-        latex_content += f"{format_date(project['startDate'])} - {format_date(project['endDate'])}\n\n"
-        if enhanced_data and i < len(enhanced_data["projects"]):
-            latex_content += "\\begin{itemize}[itemsep=1pt]\n"
-            for point in enhanced_data["projects"][i]["points"]:
-                latex_content += f"  \\item {point}\n"
-            latex_content += "\\end{itemize}\n"
-        if "demoLink" in project:
-            latex_content += f"\\href{{{project['demoLink']}}}{{Demo}}\n"
+    latex_content += r"\section{Projects}" + "\n\n"
+    for project in candidate_data["projects"]:
+        latex_content += r"\begin{tabularx}{\linewidth}{ @{}l r@{} }" + "\n"
+        latex_content += f"\\textbf{{{project['name']}}} \\small{{$|$ {project['techStack']}}} & \\hfill \\href{{{project['demoLink']}}}{{GitHub Repo}} \\\\[3.75pt]\n"
+        latex_content += r"\multicolumn{2}{@{}X@{}}{" + "\n"
+        latex_content += r"\begin{itemize}[itemsep=1pt, parsep=0pt]" + "\n"
+        
+        # Find matching enhanced project points
+        enhanced_points = []
+        for enhanced_proj in enhanced_data["projects"]:
+            if enhanced_proj["name"] == project["name"]:
+                enhanced_points = enhanced_proj["points"]
+                break
+            
+        # Use enhanced points if available, otherwise use description
+        points = enhanced_points if enhanced_points else [project["description"]]
+        for point in points:
+            latex_content += f"    \\item {point}\n"
+            
+        latex_content += r"\end{itemize}" + "\n"
+        latex_content += r"}  \\" + "\n"
+        latex_content += r"\end{tabularx}" + "\n\n"
 
     # Education Section
-    latex_content += "\\section*{Education}\n"
+    latex_content += r"\section{Education}" + "\n"
+    latex_content += r"\begin{itemize}[leftmargin=0.0in, itemsep=1pt, parsep=0pt, label={}]" + "\n"
     for edu in candidate_data["education"]:
-        latex_content += f"\\subsection*{{{edu['degree']} - {edu['institution']}}}\n"
-        latex_content += f"{format_date(edu['startDate'])} - {format_date(edu['endDate'])}\n\n"
+        latex_content += r"\vspace{-2pt}\item" + "\n"
+        latex_content += r"    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}" + "\n"
+        latex_content += f"      \\textbf{{{edu['institution']}}} & \\textbf{{\\small {edu['startDate']['year']}-{edu['endDate']['year']}}} \\\\\n"
+        latex_content += f"      \\textit{{\\small {edu['degree']}}} \\\\\n"
+        latex_content += r"    \end{tabular*}\vspace{-5pt}" + "\n"
+    latex_content += r"\end{itemize}" + "\n\n"
+
+    # Technical Skills Section
+    latex_content += r"\section{Technical Skills}" + "\n"
+    skills_text = ", ".join(skill["skill"] for skill in candidate_data["skills"])
+    latex_content += f"\\normalsize{{{skills_text}}}\n\n"
 
     # Achievements Section
-    latex_content += "\\section*{Achievements}\n"
+    latex_content += r"\section{Achievements}" + "\n"
     for achievement in candidate_data["achievements"]:
-        latex_content += f"\\subsection*{{{achievement['title']}}}\n"
-        latex_content += f"{achievement['description']}\n\n"
+        latex_content += f"\\textbf{{{achievement['title']}}} \\\\\n"
+        if "description" in achievement:
+            latex_content += f"\\textit{{\\small{{{achievement['description']}}}}}  \\\\[5pt]\n"
 
-    latex_content += "\\end{document}\n"
+    latex_content += r"\end{document}"
     return latex_content
 
 
@@ -262,8 +383,10 @@ def save_latex_to_file(latex_content, filepath):
     with open(filepath, "w") as f:
         f.write(latex_content)
 
+
 class PDFConversionError(Exception):
     """Custom exception for PDF conversion errors"""
+
     pass
 
 
@@ -292,19 +415,21 @@ def convert_latex_to_pdf(latex_filepath: str, pdf_filepath: str) -> bool:
             # Run pdflatex twice to ensure proper rendering of all elements
             for _ in range(2):
                 result = subprocess.run(
-                    ['pdflatex', '-interaction=nonstopmode', tex_filename],
+                    ["pdflatex", "-interaction=nonstopmode", tex_filename],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    check=True
+                    check=True,
                 )
 
             # Move the generated PDF to the desired location if they're different
-            generated_pdf = os.path.splitext(tex_filename)[0] + '.pdf'
-            if os.path.abspath(generated_pdf) != pdf_filepath and os.path.exists(generated_pdf):
+            generated_pdf = os.path.splitext(tex_filename)[0] + ".pdf"
+            if os.path.abspath(generated_pdf) != pdf_filepath and os.path.exists(
+                generated_pdf
+            ):
                 os.replace(generated_pdf, pdf_filepath)
 
             # Clean up auxiliary files
-            for ext in ['.aux', '.log', '.out']:
+            for ext in [".aux", ".log", ".out"]:
                 aux_file = os.path.splitext(tex_filename)[0] + ext
                 if os.path.exists(aux_file):
                     os.remove(aux_file)
@@ -322,10 +447,12 @@ def convert_latex_to_pdf(latex_filepath: str, pdf_filepath: str) -> bool:
         logger.error(f"stderr: {e.stderr.decode('utf-8', errors='ignore')}")
         return False
     except FileNotFoundError:
-        error_msg = ("pdflatex command not found. Please install TeX Live or MiKTeX.\n"
-                     "Windows: Install MiKTeX from https://miktex.org/download\n"
-                     "Linux: Run 'sudo apt-get install texlive-full'\n"
-                     "macOS: Install MacTeX from https://tug.org/mactex/")
+        error_msg = (
+            "pdflatex command not found. Please install TeX Live or MiKTeX.\n"
+            "Windows: Install MiKTeX from https://miktex.org/download\n"
+            "Linux: Run 'sudo apt-get install texlive-full'\n"
+            "macOS: Install MacTeX from https://tug.org/mactex/"
+        )
         logger.error(error_msg)
         return False
     except Exception as e:
@@ -340,18 +467,18 @@ def main():
         output_dir = Path("generated_resumes")
         output_dir.mkdir(exist_ok=True)
 
-        # # Generate enhanced descriptions with a single AI call
+        # Generate enhanced descriptions with a single AI call
         # logger.info("Enhancing descriptions...")
-        # enhanced_data = enhance_all_descriptions(CANDIDATE_DATA, JOB_DESCRIPTION)
+        enhanced_data = enhance_all_descriptions(CANDIDATE_DATA, JOB_DESCRIPTION)
 
-        # # Generate LaTeX content
-        # logger.info("Generating LaTeX content...")
-        # latex_content = generate_latex(CANDIDATE_DATA, enhanced_data)
+        # Generate LaTeX content
+        logger.info("Generating LaTeX content...")
+        latex_content = generate_latex(CANDIDATE_DATA, ENHANCED_DATA, "Hardik Jain")
         latex_filepath = output_dir / "generated_resume.tex"
 
         # # Save LaTeX content
-        # latex_filepath.write_text(latex_content, encoding='utf-8')
-        # logger.info(f"LaTeX file saved: {latex_filepath}")
+        latex_filepath.write_text(latex_content, encoding='utf-8')
+        logger.info(f"LaTeX file saved: {latex_filepath}")
 
         # Convert to PDF
         pdf_filepath = output_dir / "generated_resume.pdf"
@@ -359,7 +486,9 @@ def main():
         if convert_latex_to_pdf(str(latex_filepath), str(pdf_filepath)):
             logger.info(f"Resume generated successfully! Saved as: {pdf_filepath}")
         else:
-            logger.error("PDF conversion failed. Please check the LaTeX content and your LaTeX installation.")
+            logger.error(
+                "PDF conversion failed. Please check the LaTeX content and your LaTeX installation."
+            )
             # Return a non-zero exit code to indicate failure
             sys.exit(1)
 

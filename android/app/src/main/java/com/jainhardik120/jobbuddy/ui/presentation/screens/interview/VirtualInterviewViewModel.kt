@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.jainhardik120.jobbuddy.R
-import com.jainhardik120.jobbuddy.data.remote.InterviewEvaluationRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
-import com.jainhardik120.jobbuddy.data.remote.QuestionResponse
+import com.jainhardik120.jobbuddy.data.dto.QuestionResponse
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import com.jainhardik120.jobbuddy.ui.CollectUiEvents
 import dagger.hilt.android.lifecycle.HiltViewModel

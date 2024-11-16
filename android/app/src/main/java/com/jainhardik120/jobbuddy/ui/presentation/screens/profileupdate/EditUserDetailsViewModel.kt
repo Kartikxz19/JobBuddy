@@ -3,7 +3,7 @@ package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
-import com.jainhardik120.jobbuddy.data.remote.ProfileDetails
+import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import com.jainhardik120.jobbuddy.ui.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel

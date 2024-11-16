@@ -14,11 +14,19 @@ import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import com.jainhardik120.jobbuddy.Result
+import com.jainhardik120.jobbuddy.data.FileReader
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
-import com.jainhardik120.jobbuddy.data.remote.dto.GoogleLoginRequest
-import com.jainhardik120.jobbuddy.data.remote.dto.LoginResponse
-import com.jainhardik120.jobbuddy.data.remote.dto.MessageError
-import com.jainhardik120.jobbuddy.data.remote.dto.MessageResponse
+import com.jainhardik120.jobbuddy.data.dto.EvaluationResponse
+import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewQuestions
+import com.jainhardik120.jobbuddy.data.dto.LoginResponse
+import com.jainhardik120.jobbuddy.data.dto.MessageError
+import com.jainhardik120.jobbuddy.data.dto.MessageResponse
+import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
+import com.jainhardik120.jobbuddy.data.dto.ResumeScoreRequest
+import com.jainhardik120.jobbuddy.data.dto.ResumeScoreResponse
+import com.jainhardik120.jobbuddy.data.dto.ResumeStatusResponse
 import kotlinx.coroutines.flow.Flow
 import io.ktor.client.plugins.onUpload
 import io.ktor.client.request.forms.formData
@@ -26,8 +34,6 @@ import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 
 
 class JobBuddyAPIImpl(
@@ -156,41 +162,3 @@ class JobBuddyAPIImpl(
 }
 
 
-@Serializable
-data class ResumeScoreRequest(
-    @SerialName("job_description")
-    val jobDescription: String
-)
-
-@Serializable
-data class ResumeScoreResponse(
-    @SerialName("answer")
-    val message: String,
-    @SerialName("extracted_resume")
-    val resumeText: String,
-    @SerialName("job_posting")
-    val jobDescription: String
-)
-
-@Serializable
-data class ResumeStatusResponse(
-    val message: String,
-    @SerialName("file_path")
-    val filePath: String? = null,
-    @SerialName("upload_time")
-    val uploadTime: String? = null
-)
-
-@Serializable
-data class InterviewEvaluationRequest(
-    @SerialName("job_description")
-    val jobDescription: String,
-    @SerialName("questions_responses")
-    val questionsResponses : List<QuestionResponse>
-)
-
-@Serializable
-data class QuestionResponse(
-    val question : String,
-    val answer : String
-)
