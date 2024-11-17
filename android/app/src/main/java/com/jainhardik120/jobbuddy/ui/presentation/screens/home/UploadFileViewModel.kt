@@ -3,6 +3,7 @@ package com.jainhardik120.jobbuddy.ui.presentation.screens.home
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
+import com.jainhardik120.jobbuddy.data.KeyValueStorage
 import com.jainhardik120.jobbuddy.data.local.JBDatabase
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class UploadFileViewModel @Inject constructor(
     private val api: JobBuddyAPI,
-    private val jbDatabase: JBDatabase
+    private val jbDatabase: JBDatabase,
+    private val keyValueStorage: KeyValueStorage
 ) : BaseViewModel() {
 
     private val _state = mutableStateOf(UploadState())
@@ -25,6 +27,14 @@ class UploadFileViewModel @Inject constructor(
         jbDatabase.dao.getAllJobs().onEach {
             _state.value = _state.value.copy(jobList = it)
         }.launchIn(viewModelScope)
+    }
+
+    fun setJobSheet(boolean: Boolean) {
+        _state.value = _state.value.copy(jobSheetOpened = boolean)
+    }
+
+    fun logout() {
+        keyValueStorage.removeValue(KeyValueStorage.TOKEN_KEY)
     }
 
     fun createJob(jobDescription: String) {

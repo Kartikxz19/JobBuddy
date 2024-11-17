@@ -186,12 +186,10 @@ def enhance_all_descriptions(candidate_data, job_description):
     """
 
     response = llm.invoke(prompt)
-    print(response.content)
-
-    # Extract JSON data from response using regex to capture text between the first and last curly braces
     json_match = re.search(r"\{.*\}", response.content, re.DOTALL)
     if json_match:
         json_data = json_match.group(0)
+        print(json_data)
         try:
             enhanced_data = json.loads(json_data)
             return enhanced_data

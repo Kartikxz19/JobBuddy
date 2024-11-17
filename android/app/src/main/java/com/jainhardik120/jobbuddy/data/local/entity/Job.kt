@@ -3,6 +3,7 @@ package com.jainhardik120.jobbuddy.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import com.jainhardik120.jobbuddy.data.dto.JobPosting
 import com.jainhardik120.jobbuddy.data.remote.FlashCard
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -16,6 +17,10 @@ data class Job(
     val skills: List<String>,
     val description: String
 )
+
+fun Job.toJobPosting(): JobPosting {
+    return JobPosting(role, experience, skills, description)
+}
 
 @Entity(tableName = "study_plan")
 data class StudyPlan(

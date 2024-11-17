@@ -27,10 +27,6 @@ class ApplicationViewModel @Inject constructor(
         }
     }
 
-    fun logOut() {
-        keyValueStorage.removeValue(KeyValueStorage.TOKEN_KEY)
-    }
-
     override fun onCleared() {
         super.onCleared()
         keyValueStorage.stopListening()

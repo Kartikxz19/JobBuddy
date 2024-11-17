@@ -1,10 +1,7 @@
 package com.jainhardik120.jobbuddy.data.remote
 
-import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
 import com.jainhardik120.jobbuddy.Result
 import com.jainhardik120.jobbuddy.data.FileReader
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
@@ -30,7 +27,7 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HeadersBuilder
@@ -38,12 +35,8 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.utils.io.core.isEmpty
-import io.ktor.utils.io.core.readBytes
-import io.ktor.utils.io.readRemaining
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import java.io.OutputStream
 
 
 class JobBuddyAPIImpl(
@@ -60,7 +53,12 @@ class JobBuddyAPIImpl(
             val response = call.invoke()
             Result.Success(response)
         } catch (e: ClientRequestException) {
-            Result.ClientException(e.response.body<R>(), e.response.status)
+            try {
+                val errorBody: R = e.response.body()
+                Result.ClientException(errorBody, e.response.status)
+            } catch (innerException: Exception) {
+                Result.Exception("Deserialization failed: ${innerException.message}")
+            }
         } catch (e: Exception) {
             Result.Exception(e.message)
         }
@@ -99,9 +97,8 @@ class JobBuddyAPIImpl(
     }
 
     override suspend fun generateTailoredResume(
-        fileName: String,
         jobData: JobPosting
-    ): Result<Unit, MessageError> {
+    ): Result<HttpResponse, MessageError> {
         return performApiRequest {
             val response = client.post(APIRoutes.GENERATE_TAILORED_RESUME_ROUTE) {
                 contentType(ContentType.Application.Json)
@@ -109,36 +106,12 @@ class JobBuddyAPIImpl(
                 tokenAuthHeaders()
             }
             if (response.status == HttpStatusCode.OK) {
-                val outputStream = getDownloadsFileOutputStream(context, fileName)
-                if (outputStream != null) {
-                    response.bodyAsChannel().apply {
-                        outputStream.use { outputStream ->
-                            while (!isClosedForRead) {
-                                val buffer = readRemaining(DEFAULT_BUFFER_SIZE.toLong())
-                                while (!buffer.isEmpty) {
-                                    outputStream.write(buffer.readBytes())
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    throw Exception("Failed to create file in downloads directory")
-                }
+//
+                response
             } else {
                 throw ClientRequestException(response, "Failed to download resume")
             }
         }
-    }
-
-    private fun getDownloadsFileOutputStream(context: Context, fileName: String): OutputStream? {
-        val resolver = context.contentResolver
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-        }
-        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-        return uri?.let { resolver.openOutputStream(it) }
     }
 
     override suspend fun loginGoogle(request: GoogleLoginRequest): Result<LoginResponse, MessageError> {

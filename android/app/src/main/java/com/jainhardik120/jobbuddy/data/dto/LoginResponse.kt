@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 data class LoginResponse(
     val token: String,
     @SerialName("user_id")
-    val userID: String
+    val userID: Int
 )

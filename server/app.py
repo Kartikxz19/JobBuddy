@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from google.auth import transport
+from google.auth.transport import requests as google_requests
 from pathlib import Path
 from datetime import datetime, timedelta
 import logging
@@ -25,7 +25,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("POSTGRESQL_URI")
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
 db = SQLAlchemy(app)
-
 
 llm = ChatGroq(
     model="llama-3.1-70b-versatile",
@@ -299,7 +298,7 @@ def login():
         if not token:
             return jsonify({'error': 'Token missing'}), 400
 
-        idinfo = id_token.verify_oauth2_token(token, transport.requests.Request(), os.getenv("GOOGLE_CLIENT_ID"))
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), os.getenv("GOOGLE_CLIENT_ID"))
 
         if idinfo['aud'] != os.getenv("GOOGLE_CLIENT_ID"):
             raise ValueError('Invalid audience.')
@@ -324,7 +323,7 @@ def login():
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@app.route('/api/resumes', methods=['GET'])
+@app.route('/api/resume', methods=['GET'])
 @token_required
 def list_resumes(user_id):
     try:
@@ -563,7 +562,7 @@ def check_profile_score(user_id):
                 "resume": resume,
             }
         )
-        return jsonify({'analysis' : answer}), 200
+        return jsonify({'analysis' : answer.content}), 200
     except Exception as e:
         logging.error(f"Check profile score error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
@@ -633,7 +632,7 @@ def generate_questions(user_id):
             return jsonify({'error': 'Job description is required'}), 400
             
         resume = get_profile_data(user_id)
-        questions = generate_interview_questions(job_data, resume)
+        questions = generate_interview_questions(job_data, resume, num_questions=2)
         return jsonify({"questions" : questions}),200
     except Exception as e:
         logging.error(f"Generate interview questions error: {str(e)}")

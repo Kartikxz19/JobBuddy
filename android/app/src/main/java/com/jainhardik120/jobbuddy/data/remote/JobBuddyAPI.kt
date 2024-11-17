@@ -12,6 +12,7 @@ import com.jainhardik120.jobbuddy.data.dto.MessageError
 import com.jainhardik120.jobbuddy.data.dto.MessageResponse
 import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
 import com.jainhardik120.jobbuddy.data.dto.ResumeScoreResponse
+import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -31,9 +32,8 @@ interface JobBuddyAPI {
     suspend fun checkResumeScore(jobData: JobPosting): Result<ResumeScoreResponse, MessageError>
 
     suspend fun generateTailoredResume(
-        fileName: String = "tailored_resume.pdf",
         jobData: JobPosting
-    ): Result<Unit, MessageError>
+    ): Result<HttpResponse, MessageError>
 
     suspend fun generateFlashCards(jobData: JobPosting): Result<StudyPlanResponse, MessageError>
     suspend fun getInterviewQuestions(jobData: JobPosting): Result<InterviewQuestions, MessageError>

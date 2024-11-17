@@ -129,7 +129,7 @@ class EditUserDetailsViewModel @Inject constructor(
     fun onEvent(event: EditUserDetailsEvent) {
         when (event) {
             is EditUserDetailsEvent.Added -> updateList(_state.value, event.item)
-            is EditUserDetailsEvent.Removed -> removeFromList(_state.value, event.index)
+            is EditUserDetailsEvent.Removed -> removeFromList(_state.value, event)
             is EditUserDetailsEvent.Updated -> updateItemAtIndex(_state.value, event)
             is EditUserDetailsEvent.SaveClicked -> saveUserDetails()
         }
@@ -147,40 +147,40 @@ class EditUserDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun removeFromList(state: EditUserDetailsState, index: Int) {
-        _state.value = when (index) {
-            in state.skills.indices -> state.copy(
-                skills = state.skills.toMutableList().also { it.removeAt(index) }.toList()
+    private fun removeFromList(state: EditUserDetailsState, event: EditUserDetailsEvent.Removed) {
+        _state.value = when (event.item) {
+            is InputModel.Skill -> state.copy(
+                skills = state.skills.toMutableList().also { it.removeAt(event.index) }.toList()
             )
 
-            in state.projects.indices -> state.copy(
-                projects = state.projects.toMutableList().also { it.removeAt(index) }.toList()
+            is InputModel.Project -> state.copy(
+                projects = state.projects.toMutableList().also { it.removeAt(event.index) }.toList()
             )
 
-            in state.experience.indices -> state.copy(
-                experience = state.experience.toMutableList().also { it.removeAt(index) }.toList()
-            )
-
-            in state.achievements.indices -> state.copy(
-                achievements = state.achievements.toMutableList().also { it.removeAt(index) }
+            is InputModel.Experience -> state.copy(
+                experience = state.experience.toMutableList().also { it.removeAt(event.index) }
                     .toList()
             )
 
-            in state.education.indices -> state.copy(
-                education = state.education.toMutableList().also { it.removeAt(index) }.toList()
-            )
-
-            in state.profileLinks.indices -> state.copy(
-                profileLinks = state.profileLinks.toMutableList().also { it.removeAt(index) }
+            is InputModel.Achievement -> state.copy(
+                achievements = state.achievements.toMutableList().also { it.removeAt(event.index) }
                     .toList()
             )
 
-            in state.contactDetails.indices -> state.copy(
-                contactDetails = state.contactDetails.toMutableList().also { it.removeAt(index) }
+            is InputModel.Education -> state.copy(
+                education = state.education.toMutableList().also { it.removeAt(event.index) }
                     .toList()
             )
 
-            else -> state
+            is InputModel.ProfileLink -> state.copy(
+                profileLinks = state.profileLinks.toMutableList().also { it.removeAt(event.index) }
+                    .toList()
+            )
+
+            is InputModel.ContactDetail -> state.copy(
+                contactDetails = state.contactDetails.toMutableList()
+                    .also { it.removeAt(event.index) }.toList()
+            )
         }
     }
 
@@ -231,7 +231,7 @@ class EditUserDetailsViewModel @Inject constructor(
 
 sealed class EditUserDetailsEvent {
     data class Added(val item: InputModel) : EditUserDetailsEvent()
-    data class Removed(val index: Int) : EditUserDetailsEvent()
+    data class Removed(val index: Int, val item: InputModel) : EditUserDetailsEvent()
     data class Updated(val index: Int, val item: InputModel) : EditUserDetailsEvent()
     object SaveClicked : EditUserDetailsEvent()
 }
