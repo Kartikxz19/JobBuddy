@@ -17,6 +17,9 @@ sealed class AppRoutes() {
     data object ProfileUpdateScreen : AppRoutes()
 
     @Serializable
+    data object BookmarksScreen : AppRoutes()
+
+    @Serializable
     data class VirtualInterviewScreen(
         val jobId: Int
     ) : AppRoutes()
@@ -32,6 +35,7 @@ fun NavBackStackEntry.toAppRoute(): AppRoutes? {
         (AppRoutes.LoginScreen::class).qualifiedName -> AppRoutes.LoginScreen
         (AppRoutes.HomeScreen::class).qualifiedName -> AppRoutes.HomeScreen
         (AppRoutes.ProfileUpdateScreen::class).qualifiedName -> AppRoutes.ProfileUpdateScreen
+        (AppRoutes.BookmarksScreen::class).qualifiedName -> AppRoutes.BookmarksScreen
         (AppRoutes.JobDetailsScreen::class).qualifiedName -> this.toRoute<AppRoutes.JobDetailsScreen>()
         (AppRoutes.VirtualInterviewScreen::class).qualifiedName -> this.toRoute<AppRoutes.VirtualInterviewScreen>()
         else -> null

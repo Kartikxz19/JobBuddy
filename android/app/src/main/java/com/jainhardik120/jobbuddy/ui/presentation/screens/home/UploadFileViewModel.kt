@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
 import com.jainhardik120.jobbuddy.data.local.JBDatabase
+import com.jainhardik120.jobbuddy.data.local.entity.Job
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,7 +48,7 @@ class UploadFileViewModel @Inject constructor(
         }) { response ->
             viewModelScope.launch {
                 jbDatabase.dao.upsertJob(
-                    com.jainhardik120.jobbuddy.data.local.entity.Job(
+                    Job(
                         rawDescription = jobDescription,
                         role = response.role,
                         experience = response.experience,

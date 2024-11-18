@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,7 +28,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,6 +54,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -81,7 +86,7 @@ fun ProfileUpdateScreen(
     val context = LocalContext.current
     var showBottomSheet = remember { mutableStateOf(false) }
     var forGeneratingProfile = remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     if (showBottomSheet.value) {
         ResumesModalSheet(
             state = state,
@@ -93,9 +98,13 @@ fun ProfileUpdateScreen(
             forGeneratingProfile = forGeneratingProfile.value,
             onSelectFile = {
                 viewModel.generateProfileFromResume(it)
+                showBottomSheet.value = false
             },
             onDownloadFile = {
                 viewModel.downloadFile(it, context)
+            },
+            onDeleteResume = {
+                viewModel.deleteResume(it)
             }
         )
     }
@@ -105,23 +114,58 @@ fun ProfileUpdateScreen(
             .fillMaxSize()
     ) {
         item {
-            Button({
-                forGeneratingProfile.value = false
-                showBottomSheet.value = true
-            }) {
-                Text("Manage Resumes")
+            Row(
+                Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val buttonHeight = 56.dp // Example fixed height for all buttons
+                OutlinedButton(
+                    onClick = {
+                        forGeneratingProfile.value = false
+                        showBottomSheet.value = true
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(buttonHeight)
+                ) {
+                    Text("Manage Resumes", textAlign = TextAlign.Center)
+                }
+                OutlinedButton(
+                    onClick = {
+                        forGeneratingProfile.value = true
+                        showBottomSheet.value = true
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(buttonHeight)
+                ) {
+                    Text(
+                        if (state.isGeneratingProfile) "Generating Profile" else "Generate Profile",
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Button(
+                    onClick = {
+                        viewModel.onEvent(EditUserDetailsEvent.SaveClicked)
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(buttonHeight)
+                ) {
+                    Text(
+                        if (state.isSavingProfile) "Saving" else "Save",
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
-            Button({
-                forGeneratingProfile.value = true
-                showBottomSheet.value = true
-            }) {
-                Text("Generate Profile using resume")
-            }
+
         }
         profileSection(
             dataList = state.skills,
             onEvent = onEvent,
-            newItem = InputModel.Skill("", 0)
+            newItem = InputModel.Skill("", 0),
+            displayName = "Skill"
         )
         profileSection(
             dataList = state.projects, onEvent = onEvent,
@@ -132,7 +176,8 @@ fun ProfileUpdateScreen(
                 InputType.Date(0, 0),
                 InputType.Date(0, 0),
                 ""
-            )
+            ),
+            displayName = "Project"
         )
         profileSection(
             dataList = state.experience, onEvent = onEvent,
@@ -142,23 +187,28 @@ fun ProfileUpdateScreen(
                 InputType.Date(0, 0),
                 InputType.Date(0, 0),
                 ""
-            )
+            ),
+            displayName = "Experience"
         )
         profileSection(
             dataList = state.achievements, onEvent = onEvent,
-            newItem = InputModel.Achievement("", "")
+            newItem = InputModel.Achievement("", ""),
+            displayName = "Achievement"
         )
         profileSection(
             dataList = state.education, onEvent = onEvent,
-            newItem = InputModel.Education("", "", InputType.Date(0, 0), InputType.Date(0, 0))
+            newItem = InputModel.Education("", "", InputType.Date(0, 0), InputType.Date(0, 0)),
+            displayName = "Education"
         )
         profileSection(
             dataList = state.profileLinks, onEvent = onEvent,
-            newItem = InputModel.ProfileLink("", "")
+            newItem = InputModel.ProfileLink("", ""),
+            displayName = "Profile Link"
         )
         profileSection(
             dataList = state.contactDetails, onEvent = onEvent,
-            newItem = InputModel.ContactDetail("", "")
+            newItem = InputModel.ContactDetail("", ""),
+            displayName = "Contact Detail"
         )
     }
 }
@@ -172,7 +222,8 @@ fun ResumesModalSheet(
     setBottomSheetValue: (Boolean) -> Unit,
     forGeneratingProfile: Boolean,
     onSelectFile: (String) -> Unit,
-    onDownloadFile: (String) -> Unit
+    onDownloadFile: (String) -> Unit,
+    onDeleteResume: (String) -> Unit
 ) {
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -186,178 +237,192 @@ fun ResumesModalSheet(
             if (!state.isUploading) {
                 setBottomSheetValue(false)
             }
-        }, sheetState = sheetState
+        }, sheetState = sheetState,
+        modifier = Modifier.fillMaxHeight(0.7f)
     ) {
-        LazyColumn(
-            Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            itemsIndexed(if (forGeneratingProfile) state.userResumes.filter { !it.generated } else state.userResumes) { index, item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(item.toResumeId())
-                    Spacer(Modifier.weight(1f))
-                    var expanded by remember { mutableStateOf(false) }
-                    if (forGeneratingProfile) {
-                        Button({ onSelectFile(item.toResumeId()) }) {
-                            Text("Use")
-                        }
-                    }
-                    FilledTonalIconButton({ onDownloadFile(item.toResumeId() + ".pdf") }) {
-                        Icon(Icons.Default.KeyboardArrowDown, "Download Icon")
-                    }
-                    Box(
-                        modifier = Modifier
-                            .wrapContentSize(Alignment.TopStart)
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Text(
+                    if (forGeneratingProfile) "Select a resume" else "Manage your resumes",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            LazyColumn(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                itemsIndexed(if (forGeneratingProfile) state.userResumes.filter { !it.generated } else state.userResumes) { index, item ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        FilledTonalIconButton(onClick = { expanded = true }) {
-                            Icon(
-                                Icons.Default.MoreVert,
-                                contentDescription = "Localized description"
-                            )
+                        Text(item.toResumeId())
+                        Spacer(Modifier.weight(1f))
+                        var expanded by remember { mutableStateOf(false) }
+                        if (forGeneratingProfile) {
+                            Button({ onSelectFile(item.toResumeId()) }) {
+                                Text("Use")
+                            }
                         }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }) {
-                            if (item.generated) {
-                                DropdownMenuItem(
-                                    text = { Text("Download Latex") },
-                                    onClick = { onDownloadFile(item.toResumeId() + ".tex") }
+                        FilledTonalIconButton({ onDownloadFile(item.toResumeId() + ".pdf") }) {
+                            Icon(Icons.Default.KeyboardArrowDown, "Download Icon")
+                        }
+                        Box(
+                            modifier = Modifier
+                                .wrapContentSize(Alignment.TopStart)
+                        ) {
+                            FilledTonalIconButton(onClick = { expanded = true }) {
+                                Icon(
+                                    Icons.Default.MoreVert,
+                                    contentDescription = "Localized description"
                                 )
                             }
-                            DropdownMenuItem(
-                                text = { Text("Delete Resume") },
-                                onClick = {
-
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Outlined.Delete,
-                                        contentDescription = null
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }) {
+                                if (item.generated) {
+                                    DropdownMenuItem(
+                                        text = { Text("Download Latex") },
+                                        onClick = { onDownloadFile(item.toResumeId() + ".tex") }
                                     )
                                 }
-                            )
-                        }
+                                DropdownMenuItem(
+                                    text = { Text("Delete Resume") },
+                                    onClick = {
+                                        onDeleteResume(item.toResumeId())
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Outlined.Delete,
+                                            contentDescription = null
+                                        )
+                                    }
+                                )
+                            }
 
+                        }
+                    }
+                    HorizontalDivider(Modifier.fillMaxWidth())
+                }
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Text("Upload resume", style = MaterialTheme.typography.bodyLarge)
+                    Button(onClick = {
+                        if (!state.isUploading) {
+                            filePickerLauncher.launch("*/*")
+                        } else {
+                            viewModel.cancelUpload()
+
+                        }
+                    }) {
+                        Text(text = if (!state.isUploading) "Pick a file" else "Cancel upload")
                     }
                 }
-                HorizontalDivider(Modifier.fillMaxWidth())
-            }
-            item {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Text("Upload resume", style = MaterialTheme.typography.headlineMedium)
-                        Button(onClick = {
-                            if (!state.isUploading) {
-                                filePickerLauncher.launch("*/*")
-                            } else {
-                                viewModel.cancelUpload()
-
-                            }
-                        }) {
-                            Text(text = if (!state.isUploading) "Pick a file" else "Cancel upload")
-                        }
-                    }
-                    if (state.isUploading) {
-                        val animatedProgress by animateFloatAsState(
-                            targetValue = state.progress,
-                            animationSpec = tween(durationMillis = 100),
-                            label = "File upload progress bar"
-                        )
-                        LinearProgressIndicator(
-                            progress = { animatedProgress },
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth()
-                                .height(8.dp)
-                        )
-                    }
+                if (state.isUploading) {
+                    val animatedProgress by animateFloatAsState(
+                        targetValue = state.progress,
+                        animationSpec = tween(durationMillis = 100),
+                        label = "File upload progress bar"
+                    )
+                    LinearProgressIndicator(
+                        progress = { animatedProgress },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .height(8.dp)
+                    )
                 }
             }
         }
+
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun LazyListScope.profileSection(
-    dataList: List<InputModel>, onEvent: (EditUserDetailsEvent) -> Unit, newItem: InputModel
+    dataList: List<InputModel>,
+    onEvent: (EditUserDetailsEvent) -> Unit,
+    newItem: InputModel,
+    displayName: String = ""
 ) {
+    item {
+        Text(
+            "${displayName}s",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(16.dp)
+        )
+    }
     itemsIndexed(dataList) { index, item ->
         var showBottomSheet = remember { mutableStateOf(false) }
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         val scope = rememberCoroutineScope()
-
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Display the section name as a title
-//            Text(
-//                text = item.name,
-//                style = MaterialTheme.typography.titleMedium,
-//                modifier = Modifier.padding(bottom = 8.dp)
-//            )
-
-            Card(
-                modifier = Modifier
+        Row {
+            Column(
+                Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                shape = MaterialTheme.shapes.medium
+                    .padding(8.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    item.fields.entries.forEach { entry ->
-                        Text("${entry.value.name} : ${entry.value.type.displayName()}")
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(top = 8.dp)
-                    ) {
-                        IconButton(onClick = { showBottomSheet.value = true }) {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
-                        }
-                    }
+                item.fields.entries.forEach { entry ->
+                    Text("${entry.value.name} : ${entry.value.type.displayName()}")
                 }
             }
-
-            if (showBottomSheet.value) {
-                EditModal(
-                    hideBottomSheet = { showBottomSheet.value = false },
-                    scope = scope,
-                    sheetState = sheetState,
-                    fields = item.fields,
-                    onUpdate = { updatedValues ->
-                        onEvent(
-                            EditUserDetailsEvent.Updated(index, item.apply {
-                                fields = updatedValues
-                            })
-                        )
-                    }, onRemove = {
-                        onEvent(EditUserDetailsEvent.Removed(index = index, item = item))
-                    }
-                )
+            IconButton(onClick = { showBottomSheet.value = true }) {
+                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
             }
         }
-    }
-
-    item {
-        Button(onClick = {
-            onEvent(
-                EditUserDetailsEvent.Added(newItem)
+        if (index < dataList.size - 1) {
+            HorizontalDivider(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
             )
-        }) {
-            Text("Add New Item")
+        }
+        if (showBottomSheet.value) {
+            EditModal(
+                hideBottomSheet = { showBottomSheet.value = false },
+                scope = scope,
+                sheetState = sheetState,
+                fields = item.fields,
+                onUpdate = { updatedValues ->
+                    onEvent(
+                        EditUserDetailsEvent.Updated(index, item.apply {
+                            fields = updatedValues
+                        })
+                    )
+                }, onRemove = {
+                    onEvent(EditUserDetailsEvent.Removed(index = index, item = item))
+                }
+            )
+        }
+    }
+    item {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            ElevatedButton(onClick = {
+                onEvent(
+                    EditUserDetailsEvent.Added(newItem)
+                )
+            }) {
+                Text("Add New $displayName")
+            }
         }
     }
 }
@@ -484,5 +549,29 @@ fun EditModal(
                 }
             }
         }
+    }
+}
+
+
+@Preview
+@Composable
+fun FontSizes() {
+    Column {
+        Text("quick brown fox", style = MaterialTheme.typography.titleLarge)
+        Text("quick brown fox", style = MaterialTheme.typography.titleMedium)
+        Text("quick brown fox", style = MaterialTheme.typography.titleSmall)
+        Text("quick brown fox", style = MaterialTheme.typography.headlineLarge)
+        Text("quick brown fox", style = MaterialTheme.typography.headlineMedium)
+        Text("quick brown fox", style = MaterialTheme.typography.headlineSmall)
+        Text("quick brown fox", style = MaterialTheme.typography.displayLarge)
+        Text("quick brown fox", style = MaterialTheme.typography.displayMedium)
+        Text("quick brown fox", style = MaterialTheme.typography.displaySmall)
+        Text("quick brown fox", style = MaterialTheme.typography.bodyLarge)
+        Text("quick brown fox", style = MaterialTheme.typography.bodyMedium)
+        Text("quick brown fox", style = MaterialTheme.typography.bodySmall)
+        Text("quick brown fox", style = MaterialTheme.typography.labelLarge)
+        Text("quick brown fox", style = MaterialTheme.typography.labelMedium)
+        Text("quick brown fox", style = MaterialTheme.typography.labelSmall)
+        Text("quick brown fox")
     }
 }

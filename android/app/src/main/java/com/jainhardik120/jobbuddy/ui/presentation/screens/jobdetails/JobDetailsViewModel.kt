@@ -13,6 +13,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.jainhardik120.jobbuddy.data.local.JBDatabase
+import com.jainhardik120.jobbuddy.data.local.entity.FlashCard
 import com.jainhardik120.jobbuddy.data.local.entity.StudyPlan
 import com.jainhardik120.jobbuddy.data.local.entity.toJobPosting
 import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
@@ -129,6 +130,12 @@ class JobDetailsViewModel @Inject constructor(
                 _state.value = _state.value.copy(profileEvaluation = response.message)
                 setEvaluationSheet(true)
             }
+        }
+    }
+
+    fun bookMarkFlashCard(card: FlashCard) {
+        viewModelScope.launch {
+            jbDatabase.dao.upsertFlashCard(card)
         }
     }
 }

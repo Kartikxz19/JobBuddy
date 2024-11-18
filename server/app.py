@@ -17,6 +17,8 @@ import re
 from job_matcher import format_json, generate_interview_questions
 from generateResume import enhance_all_descriptions, generate_latex, convert_latex_to_pdf
 from flashCards import FlashcardSystem
+from experience_scraper import get_interview_insights
+
 
 load_dotenv()
 
@@ -385,7 +387,7 @@ def get_resume(user_id, resume_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@app.route('/api/resume/<int:resume_id>', methods=['DELETE'])
+@app.route('/api/resume/<string:resume_id>', methods=['DELETE'])
 @token_required
 def delete_resume(user_id, resume_id):
     try:
@@ -637,6 +639,19 @@ def generate_flash_cards(user_id):
         return jsonify({'study_plan': study_plan}), 200
     except Exception as e:
         logging.error(f"Generate flash cards error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+@app.route('/api/interview/generateInterviewExperience', methods=['POST'])
+@token_required
+def generate_questions(user_id):
+    try:
+        job_data = request.json.get('job_data')
+        if not job_data:
+            return jsonify({'error': 'Job data is required'}), 400
+        insights = get_interview_insights(job_data)
+        return jsonify({"insights" : insights}),200
+    except Exception as e:
+        logging.error(f"Generate interview questions error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/interview/generateQuestions', methods=['POST'])

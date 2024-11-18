@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -55,6 +56,9 @@ fun HomeScreen(
     LazyColumn(Modifier.fillMaxSize()) {
         itemsIndexed(state.jobList) { index, item ->
             JobItemLayout(job = item, navController = navController)
+            if (index < state.jobList.size - 1) {
+                HorizontalDivider(Modifier.fillMaxWidth())
+            }
         }
     }
 }
@@ -121,10 +125,11 @@ fun AddJobBottomSheet(
 fun JobItemLayout(job: Job, navController: NavController) {
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .fillMaxWidth()
             .clickable {
                 navController.navigate(AppRoutes.JobDetailsScreen(jobId = job.id))
             }
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = job.role,
@@ -138,8 +143,7 @@ fun JobItemLayout(job: Job, navController: NavController) {
         )
         Text(
             text = "Skills: ${job.skills.joinToString(", ")}",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }

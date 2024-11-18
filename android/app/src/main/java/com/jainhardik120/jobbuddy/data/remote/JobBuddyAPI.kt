@@ -12,6 +12,7 @@ import com.jainhardik120.jobbuddy.data.dto.MessageError
 import com.jainhardik120.jobbuddy.data.dto.MessageResponse
 import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
 import com.jainhardik120.jobbuddy.data.dto.ResumeScoreResponse
+import com.jainhardik120.jobbuddy.data.local.entity.FlashCard
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.SerialName
@@ -47,13 +48,6 @@ data class StudyPlan(
     val status: String,
     @SerialName("flashcards")
     val flashCards: List<FlashCard>
-)
-
-@Serializable
-data class FlashCard(
-    val skill: String,
-    val answer: String,
-    val question: String
 )
 
 @Serializable

@@ -49,6 +49,14 @@ class EditUserDetailsViewModel @Inject constructor(
         }
     }
 
+    fun deleteResume(resumeId : String){
+        makeApiCall({
+            api.deleteResume(resumeId)
+        }){
+            updateResumeList()
+        }
+    }
+
     fun downloadFile(resumeIdWithExtension: String, context: Context) {
         makeApiCall({
             api.downloadResume(resumeIdWithExtension)
@@ -142,6 +150,10 @@ class EditUserDetailsViewModel @Inject constructor(
                     contactDetails = _state.value.contactDetails.map { it.toData() }
                 )
             )
+        }, preExecuting = {
+            _state.value = _state.value.copy(isSavingProfile = true)
+        }, onDoneExecuting = {
+            _state.value = _state.value.copy(isSavingProfile = false)
         }) { response ->
             sendUiEvent(UiEvent.ShowToast(response.message))
         }
@@ -251,6 +263,10 @@ class EditUserDetailsViewModel @Inject constructor(
     fun generateProfileFromResume(resumeId: String) {
         makeApiCall({
             api.generateProfileFromResume(resumeId)
+        }, preExecuting = {
+            _state.value = _state.value.copy(isGeneratingProfile = true)
+        }, onDoneExecuting = {
+            _state.value = _state.value.copy(isGeneratingProfile = false)
         }) { response ->
             _state.value = _state.value.copy(
                 skills = response.skills.map { it.toInputModel() },
@@ -282,6 +298,8 @@ data class EditUserDetailsState(
     val contactDetails: List<InputModel.ContactDetail> = emptyList(),
     val userResumes: List<Resume> = emptyList(),
     val isUploading: Boolean = false,
-    val progress: Float = 0f
+    val progress: Float = 0f,
+    val isSavingProfile : Boolean = false,
+    val isGeneratingProfile : Boolean = false
 )
 
