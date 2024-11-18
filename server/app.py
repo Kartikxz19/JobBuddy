@@ -17,7 +17,7 @@ import re
 from job_matcher import format_json, generate_interview_questions
 from generateResume import enhance_all_descriptions, generate_latex, convert_latex_to_pdf
 from flashCards import FlashcardSystem
-
+import PyPDF2
 load_dotenv()
 
 app = Flask(__name__)
@@ -503,13 +503,66 @@ def update_profile(user_id):
 @token_required
 def generate_profile_from_resume(user_id):
     try:
-        resume_name = request.json.get('resume_name')
-        if not resume_name:
-            return jsonify({'error': 'Resume name is required'}), 400
-            
-        # Implementation for generating profile from resume
-        #TODO
-        return jsonify({'message': 'Profile generated successfully'}), 200
+        # Get the latest resume for the user
+        latest_resume_path, upload_time = get_latest_resume_path(user_id)
+
+        if not latest_resume_path:
+            return jsonify({'error': 'No resume found for the user'}), 404
+
+        # Extract text from the PDF resume
+        try:
+            with open(latest_resume_path, 'rb') as file:
+                pdf_reader = PyPDF2.PdfReader(file)
+                resume_text = ""
+                for page in pdf_reader.pages:
+                    resume_text += page.extract_text() + "\n"
+        except Exception as e:
+            logging.error(f"PDF text extraction error: {str(e)}")
+            return jsonify({'error': 'Failed to extract text from resume'}), 500
+
+        # Use LLM to extract structured profile information
+        prompt = PromptTemplate.from_template("""
+        Extract detailed professional information from the following resume text:
+
+        ### RESUME TEXT:
+        {resume_text}
+
+        ### INSTRUCTION:
+        Extract the following structured information:
+        1. Skills with proficiency levels(from 1 to 5)
+        2. Projects with details
+        3. Work experiences
+        4. Achievements
+        5. Education background
+        6. Profile links (LinkedIn, GitHub, etc.)
+        7. Contact details
+
+        Return ONLY a valid JSON with the following keys:
+        - skills: List of {{skill, level}}
+        - projects: List of {{name, techStack(string of comma separated values), demoLink, startDate, endDate, description}}
+        - experience: List of {{title, company, startDate, endDate, description}}
+        - achievements: List of {{title, description}}
+        - education: List of {{institution, degree, startDate, endDate}}
+        - profileLinks: List of {{platform, url}}
+        - contactDetails: List of {{type, value}}
+
+        Use MM/YYYY format for dates. Ensure dates are valid and consistent.
+        """)
+
+        # Create the chain with JSON output parser
+        json_parser = JsonOutputParser()
+        chain = prompt | llm | json_parser
+
+        try:
+            # Invoke the chain to extract profile data
+            data = chain.invoke({"resume_text": resume_text})
+            profile_data = data
+            print(profile_data)
+            return jsonify(profile_data), 200
+        except Exception as e:
+            logging.error(f"Profile extraction error: {str(e)}")
+            return jsonify({'error': 'Failed to extract profile information'}), 500
+
     except Exception as e:
         logging.error(f"Generate profile error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
