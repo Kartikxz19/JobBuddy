@@ -13,15 +13,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -38,17 +46,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.jainhardik120.jobbuddy.data.remote.toResumeId
 import com.jainhardik120.jobbuddy.ui.CollectUiEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,67 +78,26 @@ fun ProfileUpdateScreen(
 
 
     val onEvent: (EditUserDetailsEvent) -> Unit = viewModel::onEvent
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { contentUri ->
-        contentUri?.let {
-            viewModel.uploadFile(contentUri)
-        }
-    }
+    val context = LocalContext.current
     var showBottomSheet = remember { mutableStateOf(false) }
+    var forGeneratingProfile = remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     if (showBottomSheet.value) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                if (!state.isUploading) {
-                    showBottomSheet.value = false
-                }
-            }, sheetState = sheetState
-        ) {
-            LazyColumn {
-                itemsIndexed(state.userResumes) { index, item ->
-                    Text(item.resumePath)
-                }
-                item {
-                    when {
-                        !state.isUploading -> {
-                            Button(onClick = {
-                                filePickerLauncher.launch("*/*")
-                            }) {
-                                Text(text = "Pick a file")
-                            }
-                        }
-
-                        else -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                val animatedProgress by animateFloatAsState(
-                                    targetValue = state.progress,
-                                    animationSpec = tween(durationMillis = 100),
-                                    label = "File upload progress bar"
-                                )
-                                LinearProgressIndicator(
-                                    progress = { animatedProgress },
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .fillMaxWidth()
-                                        .height(16.dp)
-                                )
-                                Text(
-                                    text = "${(state.progress * 100).roundToInt()}%"
-                                )
-                                Button(onClick = {
-                                    viewModel.cancelUpload()
-                                }) {
-                                    Text(text = "Cancel upload")
-                                }
-                            }
-                        }
-                    }
-                }
+        ResumesModalSheet(
+            state = state,
+            viewModel = viewModel,
+            sheetState = sheetState,
+            setBottomSheetValue = {
+                showBottomSheet.value = it
+            },
+            forGeneratingProfile = forGeneratingProfile.value,
+            onSelectFile = {
+                viewModel.generateProfileFromResume(it)
+            },
+            onDownloadFile = {
+                viewModel.downloadFile(it, context)
             }
-        }
+        )
     }
 
     LazyColumn(
@@ -137,9 +106,16 @@ fun ProfileUpdateScreen(
     ) {
         item {
             Button({
+                forGeneratingProfile.value = false
                 showBottomSheet.value = true
             }) {
                 Text("Manage Resumes")
+            }
+            Button({
+                forGeneratingProfile.value = true
+                showBottomSheet.value = true
+            }) {
+                Text("Generate Profile using resume")
             }
         }
         profileSection(
@@ -186,6 +162,135 @@ fun ProfileUpdateScreen(
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ResumesModalSheet(
+    state: EditUserDetailsState,
+    viewModel: EditUserDetailsViewModel,
+    sheetState: SheetState,
+    setBottomSheetValue: (Boolean) -> Unit,
+    forGeneratingProfile: Boolean,
+    onSelectFile: (String) -> Unit,
+    onDownloadFile: (String) -> Unit
+) {
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { contentUri ->
+        contentUri?.let {
+            viewModel.uploadFile(contentUri)
+        }
+    }
+    ModalBottomSheet(
+        onDismissRequest = {
+            if (!state.isUploading) {
+                setBottomSheetValue(false)
+            }
+        }, sheetState = sheetState
+    ) {
+        LazyColumn(
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            itemsIndexed(if (forGeneratingProfile) state.userResumes.filter { !it.generated } else state.userResumes) { index, item ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(item.toResumeId())
+                    Spacer(Modifier.weight(1f))
+                    var expanded by remember { mutableStateOf(false) }
+                    if (forGeneratingProfile) {
+                        Button({ onSelectFile(item.toResumeId()) }) {
+                            Text("Use")
+                        }
+                    }
+                    FilledTonalIconButton({ onDownloadFile(item.toResumeId() + ".pdf") }) {
+                        Icon(Icons.Default.KeyboardArrowDown, "Download Icon")
+                    }
+                    Box(
+                        modifier = Modifier
+                            .wrapContentSize(Alignment.TopStart)
+                    ) {
+                        FilledTonalIconButton(onClick = { expanded = true }) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "Localized description"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }) {
+                            if (item.generated) {
+                                DropdownMenuItem(
+                                    text = { Text("Download Latex") },
+                                    onClick = { onDownloadFile(item.toResumeId() + ".tex") }
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text("Delete Resume") },
+                                onClick = {
+
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Outlined.Delete,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
+                        }
+
+                    }
+                }
+                HorizontalDivider(Modifier.fillMaxWidth())
+            }
+            item {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        Text("Upload resume", style = MaterialTheme.typography.headlineMedium)
+                        Button(onClick = {
+                            if (!state.isUploading) {
+                                filePickerLauncher.launch("*/*")
+                            } else {
+                                viewModel.cancelUpload()
+
+                            }
+                        }) {
+                            Text(text = if (!state.isUploading) "Pick a file" else "Cancel upload")
+                        }
+                    }
+                    if (state.isUploading) {
+                        val animatedProgress by animateFloatAsState(
+                            targetValue = state.progress,
+                            animationSpec = tween(durationMillis = 100),
+                            label = "File upload progress bar"
+                        )
+                        LinearProgressIndicator(
+                            progress = { animatedProgress },
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth()
+                                .height(8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 fun LazyListScope.profileSection(
     dataList: List<InputModel>, onEvent: (EditUserDetailsEvent) -> Unit, newItem: InputModel

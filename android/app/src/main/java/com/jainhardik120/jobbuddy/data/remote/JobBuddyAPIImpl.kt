@@ -23,6 +23,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.request
@@ -106,7 +107,19 @@ class JobBuddyAPIImpl(
                 tokenAuthHeaders()
             }
             if (response.status == HttpStatusCode.OK) {
-//
+                response
+            } else {
+                throw ClientRequestException(response, "Failed to download resume")
+            }
+        }
+    }
+
+    override suspend fun downloadResume(resumeIdWithExtension: String): Result<HttpResponse, MessageError> {
+        return performApiRequest {
+            val response = client.get(APIRoutes.RESUME_ROUTE + "/" + resumeIdWithExtension) {
+                tokenAuthHeaders()
+            }
+            if (response.status == HttpStatusCode.OK) {
                 response
             } else {
                 throw ClientRequestException(response, "Failed to download resume")

@@ -22,19 +22,14 @@ interface JobBuddyAPI {
     suspend fun loginGoogle(request: GoogleLoginRequest): Result<LoginResponse, MessageError>
     suspend fun listUploadedResumes(): Result<Resumes, MessageError>
     fun uploadResume(contentUri: Uri): Flow<ProgressUpdate>
-
-    // Get resume file not here
+    suspend fun downloadResume(resumeIdWithExtension: String): Result<HttpResponse, MessageError>
     suspend fun deleteResume(resumeId: String): Result<MessageResponse, MessageError>
     suspend fun getProfileDetails(): Result<ProfileDetails, MessageError>
     suspend fun updateProfileDetails(data: ProfileDetails): Result<MessageResponse, MessageError>
     suspend fun generateProfileFromResume(resumeId: String): Result<ProfileDetails, MessageError>
     suspend fun simplifyJobData(jobDescription: String): Result<JobPosting, MessageError>
     suspend fun checkResumeScore(jobData: JobPosting): Result<ResumeScoreResponse, MessageError>
-
-    suspend fun generateTailoredResume(
-        jobData: JobPosting
-    ): Result<HttpResponse, MessageError>
-
+    suspend fun generateTailoredResume(jobData: JobPosting): Result<HttpResponse, MessageError>
     suspend fun generateFlashCards(jobData: JobPosting): Result<StudyPlanResponse, MessageError>
     suspend fun getInterviewQuestions(jobData: JobPosting): Result<InterviewQuestions, MessageError>
     suspend fun evaluateInterview(request: InterviewEvaluationRequest): Result<EvaluationResponse, MessageError>
@@ -71,5 +66,10 @@ data class Resume(
     @SerialName("resume_path")
     val resumePath: String,
     @SerialName("upload_time")
-    val uploadTime: String
+    val uploadTime: String,
+    val generated: Boolean
 )
+
+fun Resume.toResumeId(): String {
+    return (resumePath.substringAfterLast("_")).substringBeforeLast(".")
+}

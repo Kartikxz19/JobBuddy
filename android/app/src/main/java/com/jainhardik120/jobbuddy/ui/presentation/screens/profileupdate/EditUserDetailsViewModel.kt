@@ -1,5 +1,7 @@
 package com.jainhardik120.jobbuddy.ui.presentation.screens.profileupdate
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +11,7 @@ import com.jainhardik120.jobbuddy.data.remote.JobBuddyAPI
 import com.jainhardik120.jobbuddy.data.remote.Resume
 import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import com.jainhardik120.jobbuddy.ui.UiEvent
+import com.jainhardik120.jobbuddy.ui.presentation.screens.jobdetails.saveFileToDownloads
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.CancellationException
@@ -43,6 +46,24 @@ class EditUserDetailsViewModel @Inject constructor(
             _state.value = _state.value.copy(
                 userResumes = it.resumes
             )
+        }
+    }
+
+    fun downloadFile(resumeIdWithExtension: String, context: Context) {
+        makeApiCall({
+            api.downloadResume(resumeIdWithExtension)
+        }) { response ->
+            saveFileToDownloads(
+                context,
+                viewModelScope,
+                response
+            ) { uri, mimeType ->
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, mimeType)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Open with"))
+            }
         }
     }
 
@@ -96,7 +117,7 @@ class EditUserDetailsViewModel @Inject constructor(
         makeApiCall({
             api.getProfileDetails()
         }) { response ->
-            _state.value = EditUserDetailsState(
+            _state.value = _state.value.copy(
                 skills = response.skills.map { it.toInputModel() },
                 projects = response.projects.map { it.toInputModel() },
                 experience = response.experience.map { it.toInputModel() },
@@ -227,6 +248,21 @@ class EditUserDetailsViewModel @Inject constructor(
         }
     }
 
+    fun generateProfileFromResume(resumeId: String) {
+        makeApiCall({
+            api.generateProfileFromResume(resumeId)
+        }) { response ->
+            _state.value = _state.value.copy(
+                skills = response.skills.map { it.toInputModel() },
+                projects = response.projects.map { it.toInputModel() },
+                experience = response.experience.map { it.toInputModel() },
+                achievements = response.achievements.map { it.toInputModel() },
+                education = response.education.map { it.toInputModel() },
+                profileLinks = response.profileLinks.map { it.toInputModel() },
+                contactDetails = response.contactDetails.map { it.toInputModel() }
+            )
+        }
+    }
 }
 
 sealed class EditUserDetailsEvent {

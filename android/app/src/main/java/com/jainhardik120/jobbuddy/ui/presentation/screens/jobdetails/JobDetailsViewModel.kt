@@ -1,7 +1,10 @@
 package com.jainhardik120.jobbuddy.ui.presentation.screens.jobdetails
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.runtime.State
@@ -17,8 +20,10 @@ import com.jainhardik120.jobbuddy.ui.BaseViewModel
 import com.jainhardik120.jobbuddy.ui.UiEvent
 import com.jainhardik120.jobbuddy.ui.presentation.AppRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.readRemaining
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -71,19 +76,6 @@ class JobDetailsViewModel @Inject constructor(
         }
     }
 
-
-    private fun getDownloadsFileOutputStream(context: Context, fileName: String): OutputStream? {
-        val resolver = context.contentResolver
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-        }
-        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-        return uri?.let { resolver.openOutputStream(it) }
-    }
-
-
     fun generateTailoredResume(context: Context) {
         _state.value.jobData?.let {
             makeApiCall(
@@ -96,22 +88,17 @@ class JobDetailsViewModel @Inject constructor(
                         UiEvent.ShowToast(it.error)
                     )
                 }) { response ->
-                val outputStream = getDownloadsFileOutputStream(context, "tailored_resume.pdf")
-                if (outputStream != null) {
-                    viewModelScope.launch {
-                        response.bodyAsChannel().apply {
-                            outputStream.use { outputStream ->
-                                while (!isClosedForRead) {
-                                    val buffer = readRemaining(DEFAULT_BUFFER_SIZE.toLong())
-                                    while (!buffer.exhausted()) {
-                                        outputStream.write(buffer.readByteArray())
-                                    }
-                                }
-                            }
-                        }
+                saveFileToDownloads(
+                    context,
+                    viewModelScope,
+                    response
+                ) { uri, mimeType ->
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, mimeType)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
+                    context.startActivity(Intent.createChooser(intent, "Open with"))
                 }
-                sendUiEvent(UiEvent.ShowToast("File Downloaded"))
             }
         }
     }
@@ -144,5 +131,50 @@ class JobDetailsViewModel @Inject constructor(
             }
         }
     }
+}
 
+fun saveFileToDownloads(
+    context: Context,
+    scope: CoroutineScope,
+    response: HttpResponse,
+    onSave: (Uri?, String?) -> Unit
+) {
+    val mimeType = response.headers["Content-Type"]
+    val contentDisposition = response.headers["Content-Disposition"]
+    val fileName =
+        contentDisposition?.substringAfter("filename=")?.replace("\"", "") ?: "default_filename"
+    val result = getDownloadsFileOutputStream(context, fileName, mimeType.toString())
+    val outputStream = result?.first
+    val fileUri = result?.second
+    if (outputStream != null) {
+        scope.launch {
+            response.bodyAsChannel().apply {
+                outputStream.use { outputStream ->
+                    while (!isClosedForRead) {
+                        val buffer = readRemaining(DEFAULT_BUFFER_SIZE.toLong())
+                        while (!buffer.exhausted()) {
+                            outputStream.write(buffer.readByteArray())
+                        }
+                    }
+                    onSave(fileUri, mimeType)
+                }
+            }
+        }
+    }
+}
+
+@SuppressLint("Recycle")
+fun getDownloadsFileOutputStream(
+    context: Context,
+    fileName: String,
+    mimeType: String
+): Pair<OutputStream?, Uri?>? {
+    val resolver = context.contentResolver
+    val contentValues = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+        put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+    }
+    val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+    return uri?.let { resolver.openOutputStream(it) to uri }
 }

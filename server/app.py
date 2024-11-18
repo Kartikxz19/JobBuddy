@@ -214,7 +214,7 @@ def get_profile_data(user_id):
     }
 
 def get_user_resumes(user_id):
-    """Helper function to get all resume file paths and their upload times for a user."""
+    """Helper function to get all resume file paths, their upload times, and whether they are generated."""
     files = glob.glob(f'resumes/{user_id}_*.pdf')
     if not files:
         return []
@@ -224,13 +224,19 @@ def get_user_resumes(user_id):
         upload_time_str = file.split('_')[-1].replace('.pdf', '')
         try:
             upload_time = datetime.strptime(upload_time_str, '%Y%m%d%H%M%S')
-            resumes.append({
-                'resume_path': file,
-                'upload_time': upload_time.isoformat()
-            })
         except ValueError:
             logging.warning(f"Invalid timestamp format in file name: {file}")
             continue
+        
+        # Check if the corresponding .tex file exists
+        tex_file = file.replace('.pdf', '.tex')
+        is_generated = os.path.exists(tex_file)
+        
+        resumes.append({
+            'resume_path': file,
+            'upload_time': upload_time.isoformat(),
+            'generated': is_generated
+        })
     
     # Sort resumes by upload time (newest first)
     resumes.sort(key=lambda x: x['upload_time'], reverse=True)
@@ -356,18 +362,28 @@ def upload_resume(user_id):
         logging.error(f"Upload resume error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
     
-@app.route('/api/resume/<int:resume_id>', methods=['GET'])
+@app.route('/api/resume/<string:resume_id>', methods=['GET'])
 @token_required
 def get_resume(user_id, resume_id):
     try:
-        resume_path = f'resumes/{user_id}_{resume_id}.pdf'
+        resume_path = f'resumes/{user_id}_{resume_id}'
         if not os.path.exists(resume_path):
             return jsonify({'error': 'Resume not found'}), 404
         
-        return send_file(resume_path, mimetype='application/pdf')
+        # Determine MIME type based on the file extension
+        if resume_id.endswith('.pdf'):
+            mimetype = 'application/pdf'
+        elif resume_id.endswith('.tex'):
+            mimetype = 'application/x-tex'
+        else:
+            return jsonify({'error': 'Invalid file type'}), 400
+        
+        # Send the file with the correct MIME type
+        return send_file(resume_path, mimetype=mimetype)
     except Exception as e:
         logging.error(f"Get resume error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
+
 
 @app.route('/api/resume/<int:resume_id>', methods=['DELETE'])
 @token_required
@@ -576,7 +592,7 @@ def generate_tailored_resume(user_id):
             return jsonify({'error': 'Job data is required'}), 400
         resume = get_profile_data(user_id)
 
-        output_dir = Path("generated_resumes")
+        output_dir = Path("resumes")
         output_dir.mkdir(exist_ok=True)
 
         user = User.query.filter_by(id=user_id).first()
