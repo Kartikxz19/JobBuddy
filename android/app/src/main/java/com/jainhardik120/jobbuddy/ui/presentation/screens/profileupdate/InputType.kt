@@ -36,5 +36,4 @@ sealed class InputType {
             return "$monthName, $year"
         }
     }
-
 }

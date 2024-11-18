@@ -53,7 +53,8 @@ class UploadFileViewModel @Inject constructor(
                         role = response.role,
                         experience = response.experience,
                         skills = response.skills,
-                        description = response.description
+                        description = response.description,
+                        company = response.company
                     )
                 )
             }

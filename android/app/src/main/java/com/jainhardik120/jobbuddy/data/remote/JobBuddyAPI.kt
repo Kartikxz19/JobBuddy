@@ -5,6 +5,7 @@ import com.jainhardik120.jobbuddy.Result
 import com.jainhardik120.jobbuddy.data.dto.EvaluationResponse
 import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewInsightResponse
 import com.jainhardik120.jobbuddy.data.dto.InterviewQuestions
 import com.jainhardik120.jobbuddy.data.dto.JobPosting
 import com.jainhardik120.jobbuddy.data.dto.LoginResponse
@@ -30,6 +31,7 @@ interface JobBuddyAPI {
     suspend fun generateProfileFromResume(resumeId: String): Result<ProfileDetails, MessageError>
     suspend fun simplifyJobData(jobDescription: String): Result<JobPosting, MessageError>
     suspend fun checkResumeScore(jobData: JobPosting): Result<ResumeScoreResponse, MessageError>
+    suspend fun generateInterviewInsights(jobData: JobPosting): Result<InterviewInsightResponse, MessageError>
     suspend fun generateTailoredResume(jobData: JobPosting): Result<HttpResponse, MessageError>
     suspend fun generateFlashCards(jobData: JobPosting): Result<StudyPlanResponse, MessageError>
     suspend fun getInterviewQuestions(jobData: JobPosting): Result<InterviewQuestions, MessageError>

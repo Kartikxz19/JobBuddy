@@ -420,7 +420,7 @@ def update_profile(user_id):
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
-
+    print(data)
     try:
         # Start transaction
         db.session.begin()
@@ -506,8 +506,8 @@ def update_profile(user_id):
 def generate_profile_from_resume(user_id):
     try:
         # Get the latest resume for the user
-        resume_id = request.json.get(resume_id)
-        resume_path = f'resumes/{user_id}_{resume_id}'
+        resume_id = request.json.get("resume_id")
+        resume_path = f'resumes/{user_id}_{resume_id}.pdf'
         if not os.path.exists(resume_path):
             return jsonify({'error': 'Resume not found'}), 404
 
@@ -551,7 +551,7 @@ def generate_profile_from_resume(user_id):
         - profileLinks: List of {{platform, url}}
         - contactDetails: List of {{type, value}}
 
-        Use MM/YYYY format for dates. Ensure dates are valid and consistent.
+        Use a dictionary object with only month and year {{month, year}} format for dates, month starting from 1 and Year in YYYY format, both should be integers. Ensure dates are valid and consistent. If a date is not provided, then use 01/2000 in its place
         """)
 
         # Create the chain with JSON output parser
@@ -588,6 +588,7 @@ def simplify_job(user_id):
         The scraped text is from the career's page of a website.
         Your job is to extract the job posting and return them in JSON format containing the following keys:`company`,`role`,`experience`,`skills`,`description`.
         Ensure that the `skills` key contains a list of skills.
+        And rest of the fields are string fields
         Only return the valid JSON.
         ### VALID JSON (NO PREAMBLE):
         """
@@ -699,7 +700,7 @@ def generate_flash_cards(user_id):
     
 @app.route('/api/interview/generateInterviewExperience', methods=['POST'])
 @token_required
-def generate_questions(user_id):
+def interview_experience(user_id):
     try:
         job_data = request.json.get('job_data')
         if not job_data:

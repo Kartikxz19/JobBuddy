@@ -218,16 +218,11 @@ class InterviewExperienceScraper:
 
         return results
 
-    def summarize_experiences(self, experiences: List[Dict[str, str]]) -> str:
+    def summarize_experiences(self, experiences) -> str:
         """Summarize the collected interview experiences using the LLM."""
         if not experiences:
             return "No interview experiences found."
 
-        # Prepare the text for summarization
-        combined_text = "\n\n".join([
-            f"Source: {exp['site']}\n{exp['content']}"
-            for exp in experiences
-        ])
 
         prompt = f"""
         Summarize these interview experiences concisely, focusing on:
@@ -237,7 +232,7 @@ class InterviewExperienceScraper:
         4. Important preparation tips
 
         Interview Experiences:
-        {combined_text}
+        {str(experiences)}
 
         Provide a structured summary in under 300 words.
         """

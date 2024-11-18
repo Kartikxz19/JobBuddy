@@ -104,6 +104,33 @@ class JobDetailsViewModel @Inject constructor(
         }
     }
 
+
+    fun setInterviewInsightSheet(boolean: Boolean) {
+        if (!boolean) {
+            _state.value = _state.value.copy(interviewExperienceSheet = false)
+        } else {
+            if (_state.value.interviewExperience.isNotEmpty()) {
+                _state.value = _state.value.copy(interviewExperienceSheet = true)
+            } else {
+                checkInterviewExperience()
+            }
+        }
+    }
+
+    private fun checkInterviewExperience() {
+        _state.value.jobData?.let {
+            makeApiCall(
+                {
+                    api.generateInterviewInsights(it.toJobPosting())
+                },
+                preExecuting = { sendUiEvent(UiEvent.ShowToast("Generating Interview Insights")) }) { response ->
+                _state.value = _state.value.copy(interviewExperience = response.message)
+                setInterviewInsightSheet(true)
+            }
+        }
+    }
+
+
     fun setEvaluationSheet(boolean: Boolean) {
         if (!boolean) {
             _state.value = _state.value.copy(openEvaluationSheet = false)

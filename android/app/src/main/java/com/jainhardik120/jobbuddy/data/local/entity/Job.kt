@@ -10,5 +10,6 @@ data class Job(
     val role: String,
     val experience: String,
     val skills: List<String>,
-    val description: String
+    val description: String,
+    val company : String
 )

@@ -6,7 +6,7 @@ import com.jainhardik120.jobbuddy.data.local.entity.*
 
 @androidx.room.Database(
     entities = [Job::class, StudyPlan::class, FlashCard::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -81,6 +81,26 @@ fun JobDetailsScreen(
             }
         }
     }
+
+
+    val interviewExperienceSheet = rememberModalBottomSheetState()
+
+    if (state.interviewExperienceSheet) {
+        ModalBottomSheet({
+            viewModel.setInterviewInsightSheet(false)
+        }, sheetState = interviewExperienceSheet, dragHandle = {}, shape = RoundedCornerShape(0.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(8.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                MarkdownText(state.interviewExperience)
+            }
+        }
+    }
+
     val context = LocalContext.current
     LazyColumn(
         Modifier.Companion
@@ -109,7 +129,7 @@ fun JobDetailsScreen(
                     Icons.Default.Star
                 )
                 CustomButton(
-                    { },
+                    { viewModel.setInterviewInsightSheet(true)},
                     "Interview Experience",
                     Icons.Default.Star
                 )
