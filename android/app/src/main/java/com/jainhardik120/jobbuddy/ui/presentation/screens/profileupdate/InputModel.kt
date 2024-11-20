@@ -24,9 +24,9 @@ sealed class InputModel(
             "demoLink" to InputFieldType("Demo Link", InputType.Text(demoLink)),
             "startDate" to InputFieldType(
                 "Start Date",
-                InputType.Date(startDate.year, startDate.month)
+                InputType.Date(startDate.month, startDate.year)
             ),
-            "endDate" to InputFieldType("End Date", InputType.Date(endDate.year, endDate.month)),
+            "endDate" to InputFieldType("End Date", InputType.Date(endDate.month, endDate.year)),
             "description" to InputFieldType("Description", InputType.Text(description))
         )
     )
@@ -43,9 +43,9 @@ sealed class InputModel(
             "company" to InputFieldType("Company", InputType.Text(company)),
             "startDate" to InputFieldType(
                 "Start Date",
-                InputType.Date(startDate.year, startDate.month)
+                InputType.Date(startDate.month, startDate.year)
             ),
-            "endDate" to InputFieldType("End Date", InputType.Date(endDate.year, endDate.month)),
+            "endDate" to InputFieldType("End Date", InputType.Date(endDate.month, endDate.year)),
             "description" to InputFieldType("Description", InputType.Text(description))
         )
     )
@@ -71,9 +71,9 @@ sealed class InputModel(
             "degree" to InputFieldType("Degree", InputType.Text(degree)),
             "startDate" to InputFieldType(
                 "Start Date",
-                InputType.Date(startDate.year, startDate.month)
+                InputType.Date(startDate.month, startDate.year)
             ),
-            "endDate" to InputFieldType("End Date", InputType.Date(endDate.year, endDate.month))
+            "endDate" to InputFieldType("End Date", InputType.Date(endDate.month, endDate.year))
         )
     )
 

@@ -17,7 +17,9 @@ import re
 from job_matcher import format_json, generate_interview_questions
 from generateResume import enhance_all_descriptions, generate_latex, convert_latex_to_pdf
 from flashCards import FlashcardSystem
+from experience_scraper import get_interview_insights
 import PyPDF2
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -385,7 +387,7 @@ def get_resume(user_id, resume_id):
         return jsonify({'error': 'Internal server error'}), 500
 
 
-@app.route('/api/resume/<int:resume_id>', methods=['DELETE'])
+@app.route('/api/resume/<string:resume_id>', methods=['DELETE'])
 @token_required
 def delete_resume(user_id, resume_id):
     try:
@@ -418,7 +420,7 @@ def update_profile(user_id):
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
-
+    print(data)
     try:
         # Start transaction
         db.session.begin()
@@ -504,14 +506,17 @@ def update_profile(user_id):
 def generate_profile_from_resume(user_id):
     try:
         # Get the latest resume for the user
-        latest_resume_path, upload_time = get_latest_resume_path(user_id)
+        resume_id = request.json.get("resume_id")
+        resume_path = f'resumes/{user_id}_{resume_id}.pdf'
+        if not os.path.exists(resume_path):
+            return jsonify({'error': 'Resume not found'}), 404
 
-        if not latest_resume_path:
+        if not resume_path:
             return jsonify({'error': 'No resume found for the user'}), 404
 
         # Extract text from the PDF resume
         try:
-            with open(latest_resume_path, 'rb') as file:
+            with open(resume_path, 'rb') as file:
                 pdf_reader = PyPDF2.PdfReader(file)
                 resume_text = ""
                 for page in pdf_reader.pages:
@@ -546,7 +551,7 @@ def generate_profile_from_resume(user_id):
         - profileLinks: List of {{platform, url}}
         - contactDetails: List of {{type, value}}
 
-        Use MM/YYYY format for dates. Ensure dates are valid and consistent.
+        Use a dictionary object with only month and year {{month, year}} format for dates, month starting from 1 and Year in YYYY format, both should be integers. Ensure dates are valid and consistent. If a date is not provided, then use 01/2000 in its place
         """)
 
         # Create the chain with JSON output parser
@@ -583,6 +588,7 @@ def simplify_job(user_id):
         The scraped text is from the career's page of a website.
         Your job is to extract the job posting and return them in JSON format containing the following keys:`company`,`role`,`experience`,`skills`,`description`.
         Ensure that the `skills` key contains a list of skills.
+        And rest of the fields are string fields
         Only return the valid JSON.
         ### VALID JSON (NO PREAMBLE):
         """
@@ -690,6 +696,19 @@ def generate_flash_cards(user_id):
         return jsonify({'study_plan': study_plan}), 200
     except Exception as e:
         logging.error(f"Generate flash cards error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    
+@app.route('/api/interview/generateInterviewExperience', methods=['POST'])
+@token_required
+def interview_experience(user_id):
+    try:
+        job_data = request.json.get('job_data')
+        if not job_data:
+            return jsonify({'error': 'Job data is required'}), 400
+        insights = get_interview_insights(job_data)
+        return jsonify({"insights" : insights}),200
+    except Exception as e:
+        logging.error(f"Generate interview questions error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/interview/generateQuestions', methods=['POST'])

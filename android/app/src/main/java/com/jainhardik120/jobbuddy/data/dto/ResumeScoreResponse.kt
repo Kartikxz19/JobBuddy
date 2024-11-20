@@ -8,3 +8,8 @@ data class ResumeScoreResponse(
     @SerialName("analysis")
     val message: String
 )
+@Serializable
+data class InterviewInsightResponse(
+    @SerialName("insights")
+    val message: String
+)

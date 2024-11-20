@@ -2,12 +2,14 @@ package com.jainhardik120.jobbuddy.data.remote
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.jainhardik120.jobbuddy.Result
 import com.jainhardik120.jobbuddy.data.FileReader
 import com.jainhardik120.jobbuddy.data.KeyValueStorage
 import com.jainhardik120.jobbuddy.data.dto.EvaluationResponse
 import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewInsightResponse
 import com.jainhardik120.jobbuddy.data.dto.InterviewQuestions
 import com.jainhardik120.jobbuddy.data.dto.JobPosting
 import com.jainhardik120.jobbuddy.data.dto.LoginResponse
@@ -153,6 +155,7 @@ class JobBuddyAPIImpl(
     }
 
     override suspend fun updateProfileDetails(data: ProfileDetails): Result<MessageResponse, MessageError> {
+        Log.d("TAG", "updateProfileDetails: $data")
         return performApiRequest {
             requestBuilder(APIRoutes.PROFILE_ROUTE, HttpMethod.Post, data)
         }
@@ -162,7 +165,7 @@ class JobBuddyAPIImpl(
         return performApiRequest {
             requestBuilder(
                 APIRoutes.GENERATE_PROFILE_RESUME_ROUTE, HttpMethod.Post, mapOf(
-                    "resume_name" to resumeId
+                    "resume_id" to resumeId
                 )
             )
         }
@@ -182,6 +185,16 @@ class JobBuddyAPIImpl(
         return performApiRequest {
             requestBuilder(
                 APIRoutes.CHECK_PROFILE_SCORE_ROUTE, HttpMethod.Post, mapOf(
+                    "job_data" to jobData
+                )
+            )
+        }
+    }
+
+    override suspend fun generateInterviewInsights(jobData: JobPosting): Result<InterviewInsightResponse, MessageError> {
+        return performApiRequest {
+            requestBuilder(
+                APIRoutes.INTERVIEW_EXPERIENCE, HttpMethod.Post, mapOf(
                     "job_data" to jobData
                 )
             )

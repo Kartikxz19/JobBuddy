@@ -5,6 +5,7 @@ import com.jainhardik120.jobbuddy.Result
 import com.jainhardik120.jobbuddy.data.dto.EvaluationResponse
 import com.jainhardik120.jobbuddy.data.dto.GoogleLoginRequest
 import com.jainhardik120.jobbuddy.data.dto.InterviewEvaluationRequest
+import com.jainhardik120.jobbuddy.data.dto.InterviewInsightResponse
 import com.jainhardik120.jobbuddy.data.dto.InterviewQuestions
 import com.jainhardik120.jobbuddy.data.dto.JobPosting
 import com.jainhardik120.jobbuddy.data.dto.LoginResponse
@@ -12,6 +13,7 @@ import com.jainhardik120.jobbuddy.data.dto.MessageError
 import com.jainhardik120.jobbuddy.data.dto.MessageResponse
 import com.jainhardik120.jobbuddy.data.dto.ProfileDetails
 import com.jainhardik120.jobbuddy.data.dto.ResumeScoreResponse
+import com.jainhardik120.jobbuddy.data.local.entity.FlashCard
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.SerialName
@@ -29,6 +31,7 @@ interface JobBuddyAPI {
     suspend fun generateProfileFromResume(resumeId: String): Result<ProfileDetails, MessageError>
     suspend fun simplifyJobData(jobDescription: String): Result<JobPosting, MessageError>
     suspend fun checkResumeScore(jobData: JobPosting): Result<ResumeScoreResponse, MessageError>
+    suspend fun generateInterviewInsights(jobData: JobPosting): Result<InterviewInsightResponse, MessageError>
     suspend fun generateTailoredResume(jobData: JobPosting): Result<HttpResponse, MessageError>
     suspend fun generateFlashCards(jobData: JobPosting): Result<StudyPlanResponse, MessageError>
     suspend fun getInterviewQuestions(jobData: JobPosting): Result<InterviewQuestions, MessageError>
@@ -47,13 +50,6 @@ data class StudyPlan(
     val status: String,
     @SerialName("flashcards")
     val flashCards: List<FlashCard>
-)
-
-@Serializable
-data class FlashCard(
-    val skill: String,
-    val answer: String,
-    val question: String
 )
 
 @Serializable

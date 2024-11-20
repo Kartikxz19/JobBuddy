@@ -15,4 +15,5 @@ object APIRoutes {
     const val FLASH_CARDS_ROUTE = "$API_BASE_URL/job/flashCards"
     const val GENERATE_QUESTIONS_ROUTE = "$API_BASE_URL/interview/generateQuestions"
     const val INTERVIEW_EVALUATE_ROUTE = "$API_BASE_URL/interview/evaluateResponses"
+    const val INTERVIEW_EXPERIENCE = "$API_BASE_URL/interview/generateInterviewExperience"
 }

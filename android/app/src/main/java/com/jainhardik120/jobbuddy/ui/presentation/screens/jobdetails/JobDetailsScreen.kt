@@ -19,13 +19,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHostState
@@ -46,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.jainhardik120.jobbuddy.data.local.entity.FlashCard
 import com.jainhardik120.jobbuddy.ui.CollectUiEvents
 import dev.jeziellago.compose.markdowntext.MarkdownText
 
@@ -70,15 +74,33 @@ fun JobDetailsScreen(
                 Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
+                    .padding(8.dp)
                     .verticalScroll(rememberScrollState())
             ) {
                 MarkdownText(state.profileEvaluation)
-                Button({ viewModel.setEvaluationSheet(false) }) {
-                    Text("Close sheet")
-                }
             }
         }
     }
+
+
+    val interviewExperienceSheet = rememberModalBottomSheetState()
+
+    if (state.interviewExperienceSheet) {
+        ModalBottomSheet({
+            viewModel.setInterviewInsightSheet(false)
+        }, sheetState = interviewExperienceSheet, dragHandle = {}, shape = RoundedCornerShape(0.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(8.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                MarkdownText(state.interviewExperience)
+            }
+        }
+    }
+
     val context = LocalContext.current
     LazyColumn(
         Modifier.Companion
@@ -88,7 +110,7 @@ fun JobDetailsScreen(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 CustomButton(
@@ -106,22 +128,78 @@ fun JobDetailsScreen(
                     "Check Profile Score",
                     Icons.Default.Star
                 )
+                CustomButton(
+                    { viewModel.setInterviewInsightSheet(true)},
+                    "Interview Experience",
+                    Icons.Default.Star
+                )
             }
         }
         item {
             HorizontalDivider(Modifier.fillMaxWidth())
         }
         item {
-            Button({ viewModel.generateStudyPlan() }) { Text("Generate Study Plan") }
-        }
-        itemsIndexed(state.studyPlan) { index, item ->
-            Column(Modifier.fillMaxWidth()) {
-                Text(item.skill)
-                item.flashCards.forEach {
-                    Text(it.question)
-                    Text(it.answer)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { viewModel.generateStudyPlan() }) {
+                    Text(if (state.studyPlan.isEmpty()) "Generate Flash Cards" else "Regenerate Flash Cards")
                 }
             }
+        }
+        state.studyPlan.forEach { item ->
+            itemsIndexed(item.flashCards) { index, it ->
+                FlashCard(it = it, bookMarkButton = {
+                    IconButton(onClick = {
+                        viewModel.bookMarkFlashCard(it)
+                    }) {
+                        Icon(Icons.Default.AccountBox, "Bookmark")
+                    }
+                })
+            }
+        }
+    }
+}
+
+@Composable
+fun FlashCard(
+    bookMarkButton: @Composable () -> Unit = {},
+    it: FlashCard
+) {
+    Card(
+        Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    it.question,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                )
+                bookMarkButton()
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(it.answer)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = it.skill,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.End
+            )
         }
     }
 }
@@ -148,7 +226,7 @@ fun RowScope.CustomButton(
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize(1f)) {
-                Icon(icon, text, Modifier.size(48.dp))
+                Icon(icon, text, Modifier.size(32.dp))
             }
         }
         Spacer(Modifier.height(8.dp))

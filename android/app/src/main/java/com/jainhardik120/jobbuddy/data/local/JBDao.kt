@@ -1,12 +1,9 @@
 package com.jainhardik120.jobbuddy.data.local
 
 import androidx.room.Dao
-import androidx.room.Database
 import androidx.room.Query
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.room.Upsert
-import com.jainhardik120.jobbuddy.data.local.entity.Converters
+import com.jainhardik120.jobbuddy.data.local.entity.FlashCard
 import com.jainhardik120.jobbuddy.data.local.entity.Job
 import com.jainhardik120.jobbuddy.data.local.entity.StudyPlan
 import kotlinx.coroutines.flow.Flow
@@ -31,10 +28,10 @@ interface JBDao {
 
     @Upsert
     suspend fun upsertJobStudyPlan(studyPlan: StudyPlan)
-}
 
-@Database(entities = [Job::class, StudyPlan::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
-abstract class JBDatabase : RoomDatabase() {
-    abstract val dao: JBDao
+    @Upsert
+    suspend fun upsertFlashCard(flashCard: FlashCard)
+
+    @Query("SELECT * FROM bookmark_flashcards")
+    fun getFlashCards() : Flow<List<FlashCard>>
 }

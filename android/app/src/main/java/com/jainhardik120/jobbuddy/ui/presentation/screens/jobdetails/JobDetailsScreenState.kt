@@ -7,5 +7,7 @@ data class JobDetailsScreenState(
     val studyPlan: List<StudyPlan> = emptyList(),
     val jobData: Job? = null,
     val profileEvaluation: String = "",
-    val openEvaluationSheet: Boolean = false
+    val openEvaluationSheet: Boolean = false,
+    val interviewExperience : String = "",
+    val interviewExperienceSheet : Boolean = false
 )
