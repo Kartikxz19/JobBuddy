@@ -7,170 +7,6 @@ import chromadb
 def insert_interview_questions():
     # Create a DataFrame with the React questions and answers
     data = [
-        # JavaScript
-        {
-            "section": "JavaScript",
-            "question": "What is JavaScript, and how is it used?",
-            "answer": "JavaScript is a programming language primarily used to add interactive behavior to web pages, enabling features like form validation, dynamic content updates, and animations."
-        },
-        {
-            "section": "JavaScript",
-            "question": "What is the difference between '==' and '===' in JavaScript?",
-            "answer": "'==' checks for equality with type conversion, whereas '===' checks for both value and type, providing a stricter comparison."
-        },
-        {
-            "section": "JavaScript",
-            "question": "What is a closure in JavaScript?",
-            "answer": "A closure is a feature where an inner function has access to the outer (enclosing) function's variables even after the outer function has finished executing."
-        },
-        {
-            "section": "JavaScript",
-            "question": "What is the purpose of 'this' in JavaScript?",
-            "answer": "'this' refers to the context in which the function is invoked. Its value can change depending on where it’s called and how."
-        },
-        {
-            "section": "JavaScript",
-            "question": "What is an IIFE (Immediately Invoked Function Expression) in JavaScript?",
-            "answer": "An IIFE is a function that runs as soon as it is defined. It’s used to create a private scope to avoid polluting the global namespace."
-        },
-
-        # Python
-        {
-            "section": "Python",
-            "question": "What is Python, and why is it popular?",
-            "answer": "Python is a versatile, high-level programming language known for its readability, extensive libraries, and wide range of applications, including web development, data science, and automation."
-        },
-        {
-            "section": "Python",
-            "question": "What are lists and tuples in Python?",
-            "answer": "Lists are mutable, ordered collections of items, while tuples are immutable and used for fixed data sets."
-        },
-        {
-            "section": "Python",
-            "question": "What is a Python dictionary?",
-            "answer": "A dictionary is a collection of key-value pairs, where each key must be unique. Dictionaries are used for fast lookups."
-        },
-        {
-            "section": "Python",
-            "question": "What is a lambda function in Python?",
-            "answer": "A lambda function is an anonymous, inline function defined with the keyword 'lambda'. It can take any number of arguments but has only one expression."
-        },
-        {
-            "section": "Python",
-            "question": "What is Python's 'self' keyword?",
-            "answer": "'self' is used within a class to reference the current instance, allowing access to the instance's attributes and methods."
-        },
-
-        # HTML
-        {
-            "section": "HTML",
-            "question": "What is HTML?",
-            "answer": "HTML (HyperText Markup Language) is the standard language for creating and structuring content on the web."
-        },
-        {
-            "section": "HTML",
-            "question": "What are HTML tags?",
-            "answer": "HTML tags are the building blocks of HTML; they define elements such as headings, paragraphs, links, and images in a web document."
-        },
-        {
-            "section": "HTML",
-            "question": "What is the purpose of the <head> and <body> tags?",
-            "answer": "The <head> contains metadata about the HTML document, while the <body> contains the actual content displayed to the user."
-        },
-        {
-            "section": "HTML",
-            "question": "What is the <div> tag used for?",
-            "answer": "<div> is a container element used to group together other elements, often for styling and layout purposes."
-        },
-        {
-            "section": "HTML",
-            "question": "What is the difference between <strong> and <b> tags?",
-            "answer": "<strong> represents important text, often shown in bold, whereas <b> is for stylistically bold text without emphasis."
-        },
-
-        # CSS
-        {
-            "section": "CSS",
-            "question": "What is CSS?",
-            "answer": "CSS (Cascading Style Sheets) is a language used to style and layout HTML elements on a web page, controlling attributes like color, size, and positioning."
-        },
-        {
-            "section": "CSS",
-            "question": "What is the purpose of a CSS class selector?",
-            "answer": "A CSS class selector is used to apply styles to elements with a specific class attribute, allowing for reusable styling across multiple elements."
-        },
-        {
-            "section": "CSS",
-            "question": "What is a CSS Flexbox?",
-            "answer": "Flexbox is a CSS layout module that provides a flexible way to arrange elements within a container, offering control over alignment, direction, and spacing."
-        },
-        {
-            "section": "CSS",
-            "question": "What is the box model in CSS?",
-            "answer": "The box model is the structure of an HTML element, consisting of margins, borders, padding, and the content itself, affecting the layout and spacing."
-        },
-        {
-            "section": "CSS",
-            "question": "How do you center an element in CSS?",
-            "answer": "Elements can be centered using techniques like 'margin: auto', Flexbox's 'justify-content: center' and 'align-items: center', or CSS Grid's 'place-items: center'."
-        },
-
-        # Node.js
-        {
-            "section": "Node.js",
-            "question": "What is Node.js?",
-            "answer": "Node.js is a JavaScript runtime built on Chrome's V8 engine, enabling JavaScript execution on the server-side for building scalable network applications."
-        },
-        {
-            "section": "Node.js",
-            "question": "What is npm?",
-            "answer": "npm (Node Package Manager) is a package manager for Node.js, used to install, manage, and share reusable code packages for JavaScript projects."
-        },
-        {
-            "section": "Node.js",
-            "question": "What is the event loop in Node.js?",
-            "answer": "The event loop allows Node.js to perform non-blocking operations, handling asynchronous callbacks, making it ideal for I/O-heavy tasks."
-        },
-        {
-            "section": "Node.js",
-            "question": "What is a middleware in Express.js?",
-            "answer": "Middleware functions are used in Express.js to handle requests before reaching the final route handler, enabling tasks like authentication and logging."
-        },
-        {
-            "section": "Node.js",
-            "question": "What is the difference between readFile and createReadStream in Node.js?",
-            "answer": "readFile loads the entire file into memory, while createReadStream reads files in chunks, making it more efficient for large files."
-        }
-    ]
-    data.extend([
-        # SQL
-        {
-            "section": "SQL",
-            "question": "What is SQL?",
-            "answer": "SQL (Structured Query Language) is a standardized language used to interact with relational databases, including querying, updating, and managing data."
-        },
-        {
-            "section": "SQL",
-            "question": "What is the difference between INNER JOIN and OUTER JOIN?",
-            "answer": "INNER JOIN returns records that have matching values in both tables, while OUTER JOIN returns all records when there is a match in either left or right table."
-        },
-        {
-            "section": "SQL",
-            "question": "What is normalization in SQL?",
-            "answer": "Normalization is the process of structuring a database to reduce redundancy and dependency by dividing data into related tables."
-        },
-        {
-            "section": "SQL",
-            "question": "What are primary and foreign keys?",
-            "answer": "A primary key uniquely identifies each record in a table, while a foreign key is a field in one table that references the primary key of another table."
-        },
-        {
-            "section": "SQL",
-            "question": "What is a stored procedure?",
-            "answer": "A stored procedure is a precompiled collection of SQL statements stored in the database, which can be reused and executed to perform complex operations."
-        },
-
-        # Git
         {
             "section": "Git",
             "question": "What is Git?",
@@ -196,34 +32,6 @@ def insert_interview_questions():
             "question": "What is Git rebase?",
             "answer": "Git rebase integrates changes from one branch into another, creating a cleaner, linear commit history by moving commits to the top of the branch."
         },
-
-        # Docker
-        {
-            "section": "Docker",
-            "question": "What is Docker?",
-            "answer": "Docker is a platform for creating, deploying, and running applications in isolated environments called containers, ensuring consistent environments across development and production."
-        },
-        {
-            "section": "Docker",
-            "question": "What is a Docker container?",
-            "answer": "A Docker container is a lightweight, standalone executable package that includes everything needed to run a piece of software, including code, libraries, and dependencies."
-        },
-        {
-            "section": "Docker",
-            "question": "What is the difference between Docker image and Docker container?",
-            "answer": "A Docker image is a blueprint used to create containers. A Docker container is a running instance of an image."
-        },
-        {
-            "section": "Docker",
-            "question": "What is Docker Compose?",
-            "answer": "Docker Compose is a tool for defining and running multi-container Docker applications, using a YAML file to configure application services."
-        },
-        {
-            "section": "Docker",
-            "question": "How do you optimize a Docker image?",
-            "answer": "Optimization techniques include using smaller base images, minimizing layers, caching dependencies, and cleaning up unused files and packages."
-        },
-
         # Machine Learning
         {
             "section": "Machine Learning",
@@ -276,279 +84,803 @@ def insert_interview_questions():
             "section": "Data Science",
             "question": "What is exploratory data analysis (EDA)?",
             "answer": "EDA is the process of analyzing data sets to summarize their main characteristics, often using visualizations to gain insights before applying modeling techniques."
+        },
+        {
+            "section": "GraphQL",
+            "question": "What is GraphQL, and how does it differ from REST?",
+            "answer": "GraphQL is a query language for APIs that allows clients to request specific data, reducing over-fetching and under-fetching compared to REST."
+        },
+        {
+            "section": "GraphQL",
+            "question": "What are the main components of a GraphQL schema?",
+            "answer": "A GraphQL schema defines the types, queries, and mutations available in an API, shaping the structure of data clients can request."
+        },
+        {
+            "section": "GraphQL",
+            "question": "What is a resolver in GraphQL?",
+            "answer": "A resolver is a function that resolves the value for a specific field in a GraphQL query, often used to fetch data from a database or other services."
+        },
+        {
+            "section": "GraphQL",
+            "question": "Explain the purpose of mutations in GraphQL.",
+            "answer": "Mutations in GraphQL are used to modify server-side data, like creating, updating, or deleting resources, similar to POST, PUT, and DELETE in REST."
+        },
+        {
+            "section": "GraphQL",
+            "question": "How does error handling work in GraphQL?",
+            "answer": "GraphQL sends errors in the response under an `errors` key, and individual resolvers can return partial data if only specific fields encounter issues."
+        },
+        {
+            "section": "GraphQL",
+            "question": "What is the purpose of GraphQL directives?",
+            "answer": "Directives in GraphQL are used to customize query execution, such as `@include` and `@skip`, which conditionally include or exclude fields."
+        },
+        {
+            "section": "GraphQL",
+            "question": "How does GraphQL handle versioning?",
+            "answer": "GraphQL doesn’t require versioning like REST, as clients request specific fields, allowing APIs to evolve without breaking existing queries."
+        },
+        {
+            "section": "GraphQL",
+            "question": "What is Apollo Client, and how is it used in GraphQL?",
+            "answer": "Apollo Client is a JavaScript library used to manage local and remote data with GraphQL, providing caching and query management for client applications."
+        },
+        {
+            "section": "GraphQL",
+            "question": "Explain the use of fragments in GraphQL.",
+            "answer": "Fragments are reusable parts of a query that define fields, reducing redundancy when querying the same fields across multiple parts of a query."
+        },
+        {
+            "section": "GraphQL",
+            "question": "What is introspection in GraphQL?",
+            "answer": "Introspection is a feature in GraphQL that allows clients to query the schema itself, retrieving metadata about available types, queries, and mutations."
+        },
+        {
+            "section": "Redis",
+            "question": "What is Redis, and what are its primary use cases?",
+            "answer": "Redis is an in-memory data store known for its speed and flexibility, commonly used for caching, session management, and real-time analytics."
+        },
+        {
+            "section": "Redis",
+            "question": "How does data persistence work in Redis?",
+            "answer": "Redis supports data persistence through RDB snapshots and AOF (Append-Only File) logs, allowing data to be saved to disk and recovered."
+        },
+        {
+            "section": "Redis",
+            "question": "What are Redis keys and values, and how is data structured?",
+            "answer": "Redis data is stored in key-value pairs, with values supporting multiple data types like strings, lists, hashes, sets, and sorted sets."
+        },
+        {
+            "section": "Redis",
+            "question": "Explain the purpose of Redis Pub/Sub.",
+            "answer": "Redis Pub/Sub allows message broadcasting across channels, enabling publish-subscribe messaging for real-time notifications and event handling."
+        },
+        {
+            "section": "Redis",
+            "question": "What are Redis pipelines, and how do they improve performance?",
+            "answer": "Pipelines allow multiple Redis commands to be executed in a single request-response cycle, reducing latency and improving throughput."
+        },
+        {
+            "section": "Redis",
+            "question": "How do you handle data expiration in Redis?",
+            "answer": "Redis supports data expiration by setting a TTL (Time-to-Live) on keys, after which the key is automatically deleted from memory."
+        },
+        {
+            "section": "Redis",
+            "question": "What is Redis clustering, and why is it used?",
+            "answer": "Redis clustering distributes data across multiple nodes, providing high availability, fault tolerance, and horizontal scaling for large datasets."
+        },
+        {
+            "section": "Redis",
+            "question": "How does Redis handle transactions?",
+            "answer": "Redis transactions use the `MULTI` and `EXEC` commands to group multiple commands into a single transaction, executing them atomically."
+        },
+        {
+            "section": "Redis",
+            "question": "What is Redis Sentinel, and what role does it play?",
+            "answer": "Redis Sentinel is a high-availability solution for monitoring Redis instances, providing automatic failover and notifications in case of failures."
+        },
+        {
+            "section": "Redis",
+            "question": "What is a Redis hash, and how does it differ from a list?",
+            "answer": "A Redis hash stores key-value pairs within a single Redis key, while a list is an ordered collection of strings, similar to a linked list."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "What is Kubernetes, and what problems does it solve?",
+            "answer": "Kubernetes is a container orchestration platform that automates deployment, scaling, and management of containerized applications, solving issues with manual container handling."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "Explain the Kubernetes architecture and its main components.",
+            "answer": "Kubernetes architecture consists of nodes and a master control plane, with core components like API server, etcd, scheduler, controller manager, and kubelet."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "What is a Kubernetes pod?",
+            "answer": "A pod is the smallest deployable unit in Kubernetes, representing a single instance of a running process, often containing one or more containers."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "How does Kubernetes handle scaling?",
+            "answer": "Kubernetes handles scaling through horizontal pod autoscaling, adjusting the number of pods based on resource usage or custom metrics."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "What is a Kubernetes deployment, and how does it work?",
+            "answer": "A Kubernetes deployment manages stateless application updates, allowing declarative updates for pods and managing rollbacks automatically."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "How does Kubernetes manage storage with Persistent Volumes?",
+            "answer": "Persistent Volumes provide storage resources that outlive individual pods, allowing storage management separate from the lifecycle of pods."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "What is a Kubernetes service, and why is it important?",
+            "answer": "A service in Kubernetes exposes a set of pods to network traffic, providing a stable endpoint for accessing a group of pods across deployments."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "How do you perform a rolling update in Kubernetes?",
+            "answer": "A rolling update in Kubernetes gradually replaces pods with new ones, maintaining application availability during updates without downtime."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "What are ConfigMaps and Secrets in Kubernetes?",
+            "answer": "ConfigMaps store configuration data as key-value pairs, while Secrets manage sensitive data, such as passwords and tokens, securely."
+        },
+        {
+            "section": "Kubernetes",
+            "question": "How does Kubernetes handle load balancing?",
+            "answer": "Kubernetes load balances traffic to pods using services, such as ClusterIP and LoadBalancer, to distribute incoming requests across available pods."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "What is Elasticsearch, and what are its primary use cases?",
+            "answer": "Elasticsearch is a search engine based on the Lucene library, used for full-text search, analytics, and log aggregation in real-time."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "Explain the concept of an index in Elasticsearch.",
+            "answer": "An index is a collection of documents in Elasticsearch that allows for organized storage and searchability within a specific data structure."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "What is a document in Elasticsearch?",
+            "answer": "A document is the basic unit of data in Elasticsearch, represented as a JSON object containing various fields and values."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "How does Elasticsearch handle scaling and sharding?",
+            "answer": "Elasticsearch scales horizontally by splitting indexes into shards, distributing them across nodes to balance load and improve performance."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "What is the role of the Elasticsearch cluster and node?",
+            "answer": "A cluster is a collection of nodes working together in Elasticsearch, while a node is a single server within the cluster that stores data and participates in the search and indexing."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "Explain the concept of relevance scoring in Elasticsearch.",
+            "answer": "Relevance scoring is the process by which Elasticsearch ranks search results, determining the best match for a query based on factors like term frequency and field weighting."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "What is a mapping in Elasticsearch?",
+            "answer": "A mapping defines the structure of documents in an index, specifying field types and configurations for indexing and searching."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "How does Elasticsearch handle data consistency?",
+            "answer": "Elasticsearch uses a primary and replica shard system, providing eventual consistency by writing changes to the primary shard and replicating them to replicas."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "What are aggregations in Elasticsearch?",
+            "answer": "Aggregations in Elasticsearch are used for analytics, allowing users to group and analyze data across multiple documents to get insights."
+        },
+        {
+            "section": "Elasticsearch",
+            "question": "Explain the purpose of an Elasticsearch query and filter context.",
+            "answer": "Query context scores documents for relevance, while filter context selects documents based on criteria without affecting scores, enhancing performance for specific use cases."
+        },
+        {
+            "section": "Kafka",
+            "question": "What is Apache Kafka, and what are its main use cases?",
+            "answer": "Apache Kafka is a distributed streaming platform used for building real-time data pipelines and streaming applications, suitable for event sourcing and log aggregation."
+        },
+        {
+            "section": "Kafka",
+            "question": "Explain the core components of Kafka: topics, producers, and consumers.",
+            "answer": "Kafka topics are channels for data, producers publish messages to topics, and consumers read messages from topics, enabling distributed data communication."
+        },
+        {
+            "section": "Kafka",
+            "question": "What is a Kafka broker, and what role does it play?",
+            "answer": "A Kafka broker is a server that stores and serves messages, managing topic data and handling requests from producers and consumers."
+        },
+        {
+            "section": "Kafka",
+            "question": "How does Kafka handle data replication?",
+            "answer": "Kafka replicates data across multiple brokers to ensure fault tolerance, with one broker acting as the leader and others as followers for each partition."
+        },
+        {
+            "section": "Kafka",
+            "question": "What is a Kafka partition, and why is it important?",
+            "answer": "A partition is a subdivision of a topic in Kafka, allowing parallel processing and balancing data across brokers for scalability and high throughput."
+        },
+        {
+            "section": "Kafka",
+            "question": "How does Kafka guarantee message ordering?",
+            "answer": "Kafka guarantees message order within a partition, but messages may arrive in different orders across partitions, preserving order within each one."
+        },
+        {
+            "section": "Kafka",
+            "question": "Explain the difference between Kafka’s Consumer Group and individual consumers.",
+            "answer": "A consumer group is a collection of consumers that work together to consume a topic, ensuring each message is processed once, while individual consumers may consume messages independently."
+        },
+        {
+            "section": "Kafka",
+            "question": "What is Kafka Streams, and what purpose does it serve?",
+            "answer": "Kafka Streams is a library for building real-time streaming applications that process and transform data directly within Kafka, enabling event-driven architectures."
+        },
+        {
+            "section": "Kafka",
+            "question": "How does Kafka handle fault tolerance and failover?",
+            "answer": "Kafka uses leader-follower replication and elects new leaders if a broker fails, ensuring continued data availability and resilience to failures."
+        },
+        {
+            "section": "Kafka",
+            "question": "What is Kafka Connect, and how is it used?",
+            "answer": "Kafka Connect is a framework for integrating Kafka with external data sources, allowing data import/export with various systems, such as databases and storage solutions."
+        },
+        {
+            "section": "Terraform",
+            "question": "What is Terraform, and what are its primary use cases?",
+            "answer": "Terraform is an open-source infrastructure as code tool that allows developers to define and manage cloud and on-premises resources declaratively."
+        },
+        {
+            "section": "Terraform",
+            "question": "Explain the difference between declarative and imperative approaches in Terraform.",
+            "answer": "Terraform uses a declarative approach, where you define the desired state of infrastructure, and Terraform manages the steps to reach that state."
+        },
+        {
+            "section": "Terraform",
+            "question": "What is a Terraform provider?",
+            "answer": "A provider in Terraform is a plugin that interacts with cloud platforms or services, enabling the management of their resources in infrastructure configurations."
+        },
+        {
+            "section": "Terraform",
+            "question": "What are modules in Terraform, and why are they used?",
+            "answer": "Modules are reusable infrastructure components in Terraform, allowing consistent configurations across projects and simplifying complex setups."
+        },
+        {
+            "section": "Terraform",
+            "question": "How does Terraform handle state management?",
+            "answer": "Terraform stores infrastructure state in a file, tracking resources to determine changes needed and preventing configuration drift."
+        },
+        {
+            "section": "Terraform",
+            "question": "What is a Terraform plan, and how is it used?",
+            "answer": "A Terraform plan previews changes by showing the difference between the current state and desired configuration, helping to verify changes before applying."
+        },
+        {
+            "section": "Terraform",
+            "question": "Explain the purpose of Terraform workspaces.",
+            "answer": "Workspaces in Terraform allow multiple states for a configuration, enabling separate environments (e.g., dev, prod) within a single configuration."
+        },
+        {
+            "section": "Terraform",
+            "question": "What is the use of `terraform apply` and `terraform destroy` commands?",
+            "answer": "`terraform apply` creates or updates infrastructure to match configuration, while `terraform destroy` removes resources defined in the configuration."
+        },
+        {
+            "section": "Terraform",
+            "question": "How does remote state work in Terraform, and why is it important?",
+            "answer": "Remote state stores Terraform state in a shared location, such as cloud storage, enabling collaboration and consistent state across teams."
+        },
+        {
+            "section": "Terraform",
+            "question": "What is Terraform's approach to handling secrets?",
+            "answer": "Terraform relies on external secrets management solutions and environment variables, as it lacks native secure storage for sensitive data."
+        },
+        {
+            "section": "Jenkins",
+            "question": "What is Jenkins, and what is it primarily used for?",
+            "answer": "Jenkins is an open-source automation server used for continuous integration and continuous delivery, enabling automation of software development workflows."
+        },
+        {
+            "section": "Jenkins",
+            "question": "What is a Jenkins pipeline, and how does it work?",
+            "answer": "A Jenkins pipeline is a suite of automated steps, defined as code, that allows continuous delivery of software from source to deployment."
+        },
+        {
+            "section": "Jenkins",
+            "question": "Explain the difference between Declarative and Scripted Pipelines in Jenkins.",
+            "answer": "Declarative Pipelines provide a simpler, more readable structure for CI/CD, while Scripted Pipelines allow full programmatic control but are more complex."
+        },
+        {
+            "section": "Jenkins",
+            "question": "What is a Jenkins job, and how do you configure one?",
+            "answer": "A Jenkins job is a task or set of instructions executed within Jenkins, configured through a GUI or as code to define build steps, post-build actions, etc."
+        },
+        {
+            "section": "Jenkins",
+            "question": "How does Jenkins manage plugins, and why are they important?",
+            "answer": "Plugins extend Jenkins' functionality, supporting integrations with tools, platforms, and customized pipelines for diverse CI/CD needs."
+        },
+        {
+            "section": "Jenkins",
+            "question": "What is the Jenkins master-slave architecture?",
+            "answer": "Jenkins' master-slave architecture allows distributed builds, with the master coordinating and assigning tasks to slave nodes for parallel execution."
+        },
+        {
+            "section": "Jenkins",
+            "question": "What is the purpose of Jenkins Blue Ocean?",
+            "answer": "Blue Ocean is a modernized Jenkins UI focused on simplifying pipeline visualization and improving user experience with enhanced usability."
+        },
+        {
+            "section": "Jenkins",
+            "question": "How can Jenkins be used for automated testing?",
+            "answer": "Jenkins can run test scripts as part of the CI/CD pipeline, enabling early bug detection and quality assurance in the build process."
+        },
+        {
+            "section": "Jenkins",
+            "question": "What are Jenkins agents, and how do they function?",
+            "answer": "Agents (previously called slaves) execute builds and tasks assigned by the Jenkins master, enabling distributed and parallelized build processes."
+        },
+        {
+            "section": "Jenkins",
+            "question": "Explain Jenkins' approach to credentials management.",
+            "answer": "Jenkins stores and manages credentials securely, enabling secure access to sensitive data and external services within pipelines."
+        },
+        {
+            "section": "Blockchain",
+            "question": "What is Blockchain technology, and how does it work?",
+            "answer": "Blockchain is a decentralized, distributed ledger that records transactions in blocks, linked cryptographically to maintain a secure and tamper-proof history."
+        },
+        {
+            "section": "Blockchain",
+            "question": "Explain the concept of consensus mechanisms in Blockchain.",
+            "answer": "Consensus mechanisms, like Proof of Work and Proof of Stake, ensure agreement on the validity of transactions across decentralized blockchain networks."
+        },
+        {
+            "section": "Blockchain",
+            "question": "What is a smart contract?",
+            "answer": "A smart contract is a self-executing contract with the terms of the agreement directly written into code, running on a blockchain to automate transactions."
+        },
+        {
+            "section": "Blockchain",
+            "question": "Describe the difference between public and private blockchains.",
+            "answer": "Public blockchains are open and accessible to anyone, while private blockchains restrict access to authorized participants for privacy and control."
+        },
+        {
+            "section": "Blockchain",
+            "question": "What role does cryptography play in Blockchain?",
+            "answer": "Cryptography secures transactions in a blockchain, using hashing and digital signatures to ensure data integrity and prevent unauthorized access."
+        },
+        {
+            "section": "Blockchain",
+            "question": "What is a blockchain fork, and why does it happen?",
+            "answer": "A fork occurs when the blockchain splits into two paths due to protocol changes or conflicting data, leading to a potential division of the chain."
+        },
+        {
+            "section": "Blockchain",
+            "question": "How does Bitcoin's Proof of Work mechanism work?",
+            "answer": "Proof of Work requires miners to solve complex computational puzzles, adding blocks to the chain and securing the network against malicious activity."
+        },
+        {
+            "section": "Blockchain",
+            "question": "What are the potential uses of blockchain beyond cryptocurrency?",
+            "answer": "Blockchain has diverse applications in areas like supply chain management, healthcare, identity verification, and secure voting systems."
+        },
+        {
+            "section": "Blockchain",
+            "question": "What is the role of nodes in a blockchain network?",
+            "answer": "Nodes are computers participating in a blockchain network, maintaining copies of the ledger, validating transactions, and ensuring network integrity."
+        },
+        {
+            "section": "Blockchain",
+            "question": "Explain the concept of mining in blockchain technology.",
+            "answer": "Mining is the process of adding new blocks to a blockchain, requiring computational work to validate transactions and ensure security in networks like Bitcoin."
+        },
+        {
+            "section": "Svelte",
+            "question": "What is Svelte, and how does it differ from other front-end frameworks?",
+            "answer": "Svelte is a front-end framework that compiles components into highly optimized vanilla JavaScript at build time, removing the need for a virtual DOM like in React or Vue."
+        },
+        {
+            "section": "Svelte",
+            "question": "Explain the reactivity model in Svelte.",
+            "answer": "In Svelte, reactivity is achieved through assignments. When a variable is reassigned, any dependent code automatically updates, enabling fine-grained reactivity without a virtual DOM."
+        },
+        {
+            "section": "Svelte",
+            "question": "What are Svelte stores, and how do they manage state?",
+            "answer": "Svelte stores are reactive variables that provide a centralized way to manage state. They come in writable, readable, and derived types to fit different use cases."
+        },
+        {
+            "section": "Svelte",
+            "question": "How does Svelte handle component lifecycle?",
+            "answer": "Svelte offers lifecycle functions like `onMount`, `beforeUpdate`, and `afterUpdate` that allow developers to execute code at specific points in a component's lifecycle."
+        },
+        {
+            "section": "Svelte",
+            "question": "What is the purpose of the `bind:` directive in Svelte?",
+            "answer": "The `bind:` directive allows two-way data binding, letting a component variable be bound to an input field, updating the variable whenever the field changes."
+        },
+        {
+            "section": "Tailwind CSS",
+            "question": "What is Tailwind CSS, and what makes it unique among CSS frameworks?",
+            "answer": "Tailwind CSS is a utility-first CSS framework that provides low-level utility classes to build custom designs without writing custom CSS."
+        },
+        {
+            "section": "Tailwind CSS",
+            "question": "Explain the concept of utility classes in Tailwind CSS.",
+            "answer": "Utility classes in Tailwind CSS are single-purpose classes like `text-center` or `bg-blue-500` that allow developers to build complex designs directly in HTML."
+        },
+        {
+            "section": "Tailwind CSS",
+            "question": "How can you customize colors and breakpoints in Tailwind CSS?",
+            "answer": "Tailwind CSS allows customization via the `tailwind.config.js` file, where you can define custom color schemes, breakpoints, and extend or override defaults."
+        },
+        {
+            "section": "Tailwind CSS",
+            "question": "What is JIT mode in Tailwind CSS?",
+            "answer": "Just-In-Time (JIT) mode generates styles on-demand as you use them, reducing build times and overall file sizes by creating only the classes needed for a project."
+        },
+        {
+            "section": "Tailwind CSS",
+            "question": "How do you use Tailwind's responsive design utilities?",
+            "answer": "Responsive design in Tailwind is achieved through breakpoint prefixes like `sm:`, `md:`, etc., allowing styles to apply at specific screen widths."
+        },
+        {
+            "section": "TypeScript",
+            "question": "What is TypeScript, and how does it enhance JavaScript?",
+            "answer": "TypeScript is a superset of JavaScript that adds static typing, helping developers catch type-related errors early and write more maintainable code."
+        },
+        {
+            "section": "TypeScript",
+            "question": "Explain the difference between interfaces and types in TypeScript.",
+            "answer": "Both interfaces and types allow defining object structures, but interfaces support declaration merging, whereas types are more flexible, supporting unions and intersections."
+        },
+        {
+            "section": "TypeScript",
+            "question": "What are TypeScript generics, and how do they work?",
+            "answer": "Generics enable defining functions or classes that work with multiple types while providing type safety, allowing developers to write reusable, type-safe code."
+        },
+        {
+            "section": "TypeScript",
+            "question": "How does TypeScript handle null and undefined values?",
+            "answer": "TypeScript uses strict null checks (enabled with `--strictNullChecks`) to ensure variables are not assigned null or undefined unless explicitly allowed."
+        },
+        {
+            "section": "TypeScript",
+            "question": "What is type inference in TypeScript?",
+            "answer": "Type inference allows TypeScript to automatically determine the type of a variable based on its initial value or usage, reducing the need for explicit type annotations."
+        },
+        {
+            "section": "Django (Python)",
+            "question": "What is Django, and what is it primarily used for?",
+            "answer": "Django is a high-level Python web framework designed for rapid development and clean, pragmatic design, often used for building complex database-driven websites."
+        },
+        {
+            "section": "Django (Python)",
+            "question": "Explain the purpose of Django's ORM (Object-Relational Mapper).",
+            "answer": "Django's ORM provides an abstraction layer to interact with databases, allowing developers to work with database objects using Python classes instead of raw SQL."
+        },
+        {
+            "section": "Django (Python)",
+            "question": "What is Django's MVT (Model-View-Template) architecture?",
+            "answer": "Django's MVT architecture separates data (Model), user interface (Template), and business logic (View), promoting modular and maintainable code structure."
+        },
+        {
+            "section": "Django (Python)",
+            "question": "How does Django handle user authentication?",
+            "answer": "Django provides a built-in authentication system with support for login, logout, password management, and session-based authentication for web applications."
+        },
+        {
+            "section": "Django (Python)",
+            "question": "What is the purpose of Django's middleware?",
+            "answer": "Django middleware is a layer that processes requests and responses globally, enabling features like security, session handling, and cross-site scripting protection."
+        },
+        {
+            "section": "Apache Spark",
+            "question": "What is Apache Spark, and how does it differ from Hadoop MapReduce?",
+            "answer": "Apache Spark is a distributed data processing engine that performs in-memory computing, making it faster than Hadoop MapReduce, which writes intermediate data to disk."
+        },
+        {
+            "section": "Apache Spark",
+            "question": "What are RDDs (Resilient Distributed Datasets) in Spark?",
+            "answer": "RDDs are a fundamental data structure in Spark that represent distributed collections of objects, offering fault tolerance and parallel processing capabilities."
+        },
+        {
+            "section": "Apache Spark",
+            "question": "What is Spark SQL, and how does it integrate with Spark's core engine?",
+            "answer": "Spark SQL is a module for working with structured data using SQL queries, integrating with Spark’s core engine to provide support for data frames and SQL-based transformations."
+        },
+        {
+            "section": "Apache Spark",
+            "question": "Explain Spark’s support for machine learning with MLlib.",
+            "answer": "MLlib is Spark's scalable machine learning library that provides common algorithms and utilities for classification, regression, clustering, and collaborative filtering."
+        },
+        {
+            "section": "Apache Spark",
+            "question": "What is the concept of ‘lazy evaluation’ in Apache Spark?",
+            "answer": "Lazy evaluation means that Spark delays the execution of transformations until an action (like `collect` or `count`) is invoked, optimizing the overall execution plan."
+        },
+        {
+            "section": "Scikit-Learn",
+            "question": "What is Scikit-Learn, and how is it used in machine learning?",
+            "answer": "Scikit-Learn is a popular Python library for machine learning that provides simple and efficient tools for data analysis and modeling, including algorithms for classification, regression, and clustering."
+        },
+        {
+            "section": "Scikit-Learn",
+            "question": "What is the purpose of feature scaling in Scikit-Learn?",
+            "answer": "Feature scaling standardizes or normalizes the range of features so that models are not biased towards features with larger values or scales, improving model accuracy."
+        },
+        {
+            "section": "Scikit-Learn",
+            "question": "How does cross-validation work in Scikit-Learn?",
+            "answer": "Cross-validation splits the data into multiple subsets and trains the model on different training sets, evaluating it on different validation sets to ensure robust performance."
+        },
+        {
+            "section": "Scikit-Learn",
+            "question": "What are hyperparameters, and how do you tune them in Scikit-Learn?",
+            "answer": "Hyperparameters are parameters set before training the model, and you can tune them using techniques like grid search or randomized search to improve model performance."
+        },
+        {
+            "section": "Scikit-Learn",
+            "question": "Explain the difference between classification and regression algorithms in Scikit-Learn.",
+            "answer": "Classification algorithms predict categorical outcomes (e.g., spam or not spam), while regression algorithms predict continuous outcomes (e.g., house price predictions)."
+        },
+        {
+            "section": "Flask (Python)",
+            "question": "What is Flask, and how does it differ from Django?",
+            "answer": "Flask is a micro web framework for Python that is lightweight and flexible, allowing more control over the application structure, while Django is a full-stack framework with built-in features."
+        },
+        {
+            "section": "Flask (Python)",
+            "question": "How does Flask handle routing in web applications?",
+            "answer": "Flask uses decorators to map URLs to view functions, allowing easy URL routing. Routes can also include variables and query parameters."
+        },
+        {
+            "section": "Flask (Python)",
+            "question": "What is a Flask blueprint, and why is it useful?",
+            "answer": "A Flask blueprint is a way to organize application code into reusable components, improving code modularity and allowing for easier maintenance of large applications."
+        },
+        {
+            "section": "Flask (Python)",
+            "question": "Explain Flask’s support for session management.",
+            "answer": "Flask supports session management through secure cookies that store user session data on the client-side, with optional server-side session storage for more complex use cases."
+        },
+        {
+            "section": "Flask (Python)",
+            "question": "What are Flask extensions, and how do they enhance Flask’s functionality?",
+            "answer": "Flask extensions add additional functionality to Flask, such as database integration, form validation, authentication, and more, by extending the core Flask features."
+        },
+        {
+            "section": "TensorFlow",
+            "question": "What is TensorFlow, and how does it differ from other machine learning frameworks?",
+            "answer": "TensorFlow is an open-source machine learning framework developed by Google that supports deep learning, neural networks, and various machine learning algorithms, providing scalability and ease of deployment, especially in production environments."
+        },
+        {
+            "section": "TensorFlow",
+            "question": "What is TensorFlow's computational graph, and how does it work?",
+            "answer": "TensorFlow uses a computational graph where nodes represent operations, and edges represent data flow. This graph is executed in a session to compute the results of the operations."
+        },
+        {
+            "section": "TensorFlow",
+            "question": "What are tensors in TensorFlow, and how are they different from arrays in other libraries?",
+            "answer": "Tensors are multi-dimensional arrays used in TensorFlow to represent data. They are similar to arrays but can run on different devices (like GPUs) and are more efficient for large-scale computations."
+        },
+        {
+            "section": "TensorFlow",
+            "question": "Explain the purpose of TensorFlow's Keras API.",
+            "answer": "Keras is a high-level neural networks API integrated into TensorFlow that provides easy-to-use methods to build and train deep learning models with minimal code."
+        },
+        {
+            "section": "TensorFlow",
+            "question": "What is TensorFlow Lite, and how is it used for mobile applications?",
+            "answer": "TensorFlow Lite is a lightweight version of TensorFlow designed for mobile and embedded devices, allowing deployment of machine learning models on devices with limited resources."
+        },
+        {
+            "section": "PyTorch",
+            "question": "What is PyTorch, and how does it compare to TensorFlow?",
+            "answer": "PyTorch is an open-source machine learning framework known for its dynamic computation graph, which allows more flexibility during model development compared to TensorFlow's static graph approach."
+        },
+        {
+            "section": "PyTorch",
+            "question": "What is the difference between a tensor and a Variable in PyTorch?",
+            "answer": "Tensors are multi-dimensional arrays used in PyTorch, while Variables are wrappers around tensors that allow automatic differentiation for backpropagation in neural networks."
+        },
+        {
+            "section": "PyTorch",
+            "question": "Explain how PyTorch handles GPU acceleration.",
+            "answer": "PyTorch allows seamless use of GPUs by moving tensors and models to the GPU with `.to(device)` or `.cuda()`, enabling faster computation for deep learning tasks."
+        },
+        {
+            "section": "PyTorch",
+            "question": "What is the role of autograd in PyTorch?",
+            "answer": "Autograd in PyTorch is responsible for automatic differentiation, tracking operations on tensors and automatically computing gradients for optimization during training."
+        },
+        {
+            "section": "PyTorch",
+            "question": "How do you implement a custom loss function in PyTorch?",
+            "answer": "To implement a custom loss function, you subclass `torch.nn.Module` and define the forward method to calculate the loss based on predictions and true labels."
+        },
+        {
+            "section": "Ruby on Rails",
+            "question": "What is Ruby on Rails, and why is it a popular framework for web development?",
+            "answer": "Ruby on Rails (RoR) is an open-source web framework written in Ruby, known for its 'convention over configuration' approach and rapid development features, making it popular for startups and agile teams."
+        },
+        {
+            "section": "Ruby on Rails",
+            "question": "What are the key principles of the Model-View-Controller (MVC) architecture in Ruby on Rails?",
+            "answer": "In Rails, the MVC architecture separates the application into models (data), views (UI), and controllers (business logic), promoting clean code organization and easier maintenance."
+        },
+        {
+            "section": "Ruby on Rails",
+            "question": "How does ActiveRecord work in Ruby on Rails?",
+            "answer": "ActiveRecord is Rails' Object-Relational Mapping (ORM) library, which abstracts database interactions into Ruby objects, simplifying database operations like creating, reading, updating, and deleting records."
+        },
+        {
+            "section": "Ruby on Rails",
+            "question": "What is a migration in Ruby on Rails?",
+            "answer": "Migrations in Rails are scripts that allow developers to modify the database schema, such as adding or removing columns, without losing data."
+        },
+        {
+            "section": "Ruby on Rails",
+            "question": "What are Rails callbacks, and when would you use them?",
+            "answer": "Rails callbacks are methods that are called at specific points in an object's lifecycle, such as before or after saving, updating, or deleting records. They're useful for running custom logic during these stages."
+        },
+        {
+            "section": "Swift (iOS)",
+            "question": "What is Swift, and why is it preferred for iOS app development?",
+            "answer": "Swift is a modern, open-source programming language developed by Apple, designed for building iOS, macOS, watchOS, and tvOS applications with a focus on safety, performance, and expressiveness."
+        },
+        {
+            "section": "Swift (iOS)",
+            "question": "What are optionals in Swift, and how do they help with null safety?",
+            "answer": "Optionals in Swift are a type that can hold either a value or `nil`, allowing safe handling of the absence of a value and preventing runtime crashes due to null values."
+        },
+        {
+            "section": "Swift (iOS)",
+            "question": "What is the difference between `struct` and `class` in Swift?",
+            "answer": "In Swift, `structs` are value types, meaning they are copied when passed around, while `classes` are reference types, meaning they are passed by reference, sharing the same instance."
+        },
+        {
+            "section": "Swift (iOS)",
+            "question": "What are closures in Swift, and how are they different from functions?",
+            "answer": "Closures are self-contained blocks of code that can be passed around and used in your code, similar to functions, but they capture and store references to variables and constants from the surrounding context."
+        },
+        {
+            "section": "Swift (iOS)",
+            "question": "What is the purpose of the `guard` statement in Swift?",
+            "answer": "The `guard` statement is used for early exits in functions or loops. It ensures that certain conditions are met, and if not, the function exits early, improving readability and reducing nested code."
+        },
+        {
+            "section": "Hadoop",
+            "question": "What is Hadoop, and how does its architecture work?",
+            "answer": "Hadoop is an open-source framework for distributed storage and processing of large data sets. It consists of the Hadoop Distributed File System (HDFS) for storage and the MapReduce framework for processing data in parallel across clusters."
+        },
+        {
+            "section": "Hadoop",
+            "question": "What is HDFS, and what are its key components?",
+            "answer": "HDFS (Hadoop Distributed File System) is designed to store large files across multiple machines. Its key components are the NameNode (which manages metadata) and DataNodes (which store data blocks)."
+        },
+        {
+            "section": "Hadoop",
+            "question": "What is MapReduce, and how does it work in Hadoop?",
+            "answer": "MapReduce is a programming model for processing large data sets. The 'Map' phase processes input data and outputs key-value pairs, while the 'Reduce' phase aggregates the results from the 'Map' phase."
+        },
+        {
+            "section": "Hadoop",
+            "question": "What is YARN in Hadoop, and what is its role?",
+            "answer": "YARN (Yet Another Resource Negotiator) is the resource management layer in Hadoop. It manages and schedules resources across the cluster for applications, ensuring efficient use of resources."
+        },
+        {
+            "section": "Hadoop",
+            "question": "What is Hadoop Hive, and how is it used?",
+            "answer": "Hive is a data warehouse infrastructure built on top of Hadoop that provides a query language (HQL) similar to SQL for querying large datasets stored in HDFS."
+        },
+        {
+            "section": "Kotlin (Android)",
+            "question": "What is Kotlin, and how is it used in Android development?",
+            "answer": "Kotlin is a modern, statically-typed programming language developed by JetBrains. It is used in Android development as a more concise and safe alternative to Java."
+        },
+        {
+            "section": "Kotlin (Android)",
+            "question": "What are the key benefits of using Kotlin for Android development over Java?",
+            "answer": "Kotlin offers enhanced syntax, null safety, higher-order functions, and better integration with Android Studio compared to Java, making it more efficient for Android development."
+        },
+        {
+            "section": "Kotlin (Android)",
+            "question": "Explain Kotlin's null safety feature.",
+            "answer": "Kotlin's null safety feature prevents null pointer exceptions by distinguishing between nullable and non-nullable types. It requires explicit handling of null values using `?` for nullable types."
+        },
+        {
+            "section": "Kotlin (Android)",
+            "question": "How does Kotlin handle coroutines for asynchronous programming?",
+            "answer": "Kotlin coroutines simplify asynchronous programming by allowing developers to write asynchronous code in a sequential manner using `suspend` functions and `async/await` constructs."
+        },
+        {
+            "section": "Kotlin (Android)",
+            "question": "What are `data` classes in Kotlin and how are they used?",
+            "answer": "`data` classes in Kotlin are special classes designed to hold data. They automatically generate functions like `toString()`, `equals()`, and `hashCode()`, reducing boilerplate code."
+        },
+        {
+            "section": "API Management",
+            "question": "What is API management, and why is it important for modern applications?",
+            "answer": "API management involves the creation, deployment, monitoring, and security of APIs in order to ensure consistent, secure, and reliable communication between services and applications."
+        },
+        {
+            "section": "API Management",
+            "question": "What is an API Gateway, and what role does it play in microservices architecture?",
+            "answer": "An API Gateway is a server that acts as an entry point for client requests in a microservices architecture. It handles routing, load balancing, security, and rate limiting."
+        },
+        {
+            "section": "API Management",
+            "question": "How do you implement rate limiting in an API?",
+            "answer": "Rate limiting can be implemented using tools like API Gateways or by tracking API usage with tokens or counters. Limits are set to restrict the number of requests from a user in a defined time period."
+        },
+        {
+            "section": "API Management",
+            "question": "What is OAuth, and how does it work in API security?",
+            "answer": "OAuth is an open-standard authorization protocol that allows third-party applications to securely access user data without exposing credentials. It uses access tokens to authorize API calls."
+        },
+        {
+            "section": "API Management",
+            "question": "What is API versioning, and why is it necessary?",
+            "answer": "API versioning ensures backward compatibility while enabling developers to introduce new features or breaking changes in the API without affecting existing users."
+        },
+        {
+            "section": "WebSockets",
+            "question": "What are WebSockets, and how do they differ from traditional HTTP requests?",
+            "answer": "WebSockets provide a full-duplex communication channel that allows bidirectional data flow between client and server over a single TCP connection, unlike HTTP, which is request-response based."
+        },
+        {
+            "section": "WebSockets",
+            "question": "How do you establish a WebSocket connection in a browser?",
+            "answer": "A WebSocket connection is established using the JavaScript WebSocket API, where the client initiates a handshake using `new WebSocket('ws://url')` to connect to the server."
+        },
+        {
+            "section": "WebSockets",
+            "question": "What are some use cases for WebSockets in web applications?",
+            "answer": "WebSockets are commonly used in real-time applications like chat applications, online gaming, stock price updates, and collaborative editing."
+        },
+        {
+            "section": "WebSockets",
+            "question": "How do you handle message broadcasting in WebSockets?",
+            "answer": "Message broadcasting in WebSockets can be handled by maintaining a list of connected clients and then sending a message to each client in the list. This is typically done on the server-side."
+        },
+        {
+            "section": "WebSockets",
+            "question": "How does WebSocket manage connection lifecycle, and what are some common errors?",
+            "answer": "WebSocket manages its lifecycle through events like `onopen`, `onmessage`, `onclose`, and `onerror`. Common errors include connection failures and message transmission errors, often handled with retries or error handling functions."
+        },
+        {
+            "section": "NLP Libraries",
+            "question": "What is spaCy, and how is it used in natural language processing?",
+            "answer": "spaCy is an open-source library for advanced natural language processing (NLP) in Python. It provides fast and accurate tools for tokenization, part-of-speech tagging, named entity recognition (NER), and dependency parsing."
+        },
+        {
+            "section": "NLP Libraries",
+            "question": "How does Hugging Face's `Transformers` library help in NLP tasks?",
+            "answer": "Hugging Face's `Transformers` library provides state-of-the-art pre-trained models for various NLP tasks, such as text classification, translation, summarization, and question answering. It simplifies the use of transformer models like BERT, GPT, and T5 for NLP applications."
+        },
+        {
+            "section": "NLP Libraries",
+            "question": "What is tokenization, and why is it important in NLP?",
+            "answer": "Tokenization is the process of splitting text into individual words, subwords, or characters. It is important because it converts raw text into a format that can be understood by machine learning models for NLP tasks like sentiment analysis or machine translation."
+        },
+        {
+            "section": "NLP Libraries",
+            "question": "What is Named Entity Recognition (NER), and how does spaCy perform it?",
+            "answer": "NER is a task in NLP where entities such as names, dates, locations, and organizations are identified in text. spaCy uses pre-trained models to detect and classify entities in text with high accuracy."
         }
-    ])
-    data.extend([
-        # Vue.js
-        {
-            "section": "Vue.js",
-            "question": "What is Vue.js?",
-            "answer": "Vue.js is a progressive JavaScript framework used for building user interfaces and single-page applications, known for its gentle learning curve and flexibility."
-        },
-        {
-            "section": "Vue.js",
-            "question": "What are Vue components?",
-            "answer": "Components are reusable instances in Vue that contain their own data, template, and logic, making it easy to structure and reuse code across an application."
-        },
-        {
-            "section": "Vue.js",
-            "question": "What is the Vue CLI?",
-            "answer": "The Vue CLI is a tool for quickly setting up a Vue project with a pre-configured build system and development tools, allowing rapid development of Vue applications."
-        },
-        {
-            "section": "Vue.js",
-            "question": "What is Vue Router?",
-            "answer": "Vue Router is the official router for Vue.js, enabling navigation between pages and providing features like nested routes, route params, and route guards."
-        },
-        {
-            "section": "Vue.js",
-            "question": "What is Vuex in Vue.js?",
-            "answer": "Vuex is a state management library for Vue.js applications, allowing centralized storage of the app's state and enabling easy access and management of data across components."
-        },
-
-        # Angular.js
-        {
-            "section": "Angular.js",
-            "question": "What is Angular.js?",
-            "answer": "Angular.js is a JavaScript-based open-source front-end web framework primarily maintained by Google, used to build dynamic single-page applications."
-        },
-        {
-            "section": "Angular.js",
-            "question": "What are Angular directives?",
-            "answer": "Directives are special tokens in Angular that allow developers to extend HTML with custom behaviors, manipulating DOM elements and adding logic to templates."
-        },
-        {
-            "section": "Angular.js",
-            "question": "What is two-way data binding in Angular?",
-            "answer": "Two-way data binding synchronizes data between the model and the view, ensuring that changes in the model update the view and vice versa."
-        },
-        {
-            "section": "Angular.js",
-            "question": "What is an Angular service?",
-            "answer": "An Angular service is a reusable business logic component used to perform tasks like data fetching, processing, and sharing across components."
-        },
-        {
-            "section": "Angular.js",
-            "question": "What is dependency injection in Angular?",
-            "answer": "Dependency injection in Angular is a design pattern that allows classes to request dependencies from external sources rather than creating them themselves, improving code modularity."
-        },
-
-        # React Native
-        {
-            "section": "React Native",
-            "question": "What is React Native?",
-            "answer": "React Native is an open-source framework for building mobile applications using JavaScript and React, allowing code sharing between iOS and Android platforms."
-        },
-        {
-            "section": "React Native",
-            "question": "How does React Native work?",
-            "answer": "React Native compiles JavaScript code to native components, enabling the use of JavaScript to build native mobile applications with near-native performance."
-        },
-        {
-            "section": "React Native",
-            "question": "What is a React Native component?",
-            "answer": "A React Native component is a building block for UI in React Native, representing a reusable piece of the app's interface, like buttons, images, or containers."
-        },
-        {
-            "section": "React Native",
-            "question": "What is Expo in React Native?",
-            "answer": "Expo is a framework and platform for React Native that provides tools for rapid prototyping, development, and testing, especially useful for beginners."
-        },
-        {
-            "section": "React Native",
-            "question": "What is the purpose of the React Navigation library?",
-            "answer": "React Navigation is a library for routing and navigation in React Native applications, providing navigators like stack, tab, and drawer for screen transitions."
-        },
-
-        # Cypress
-        {
-            "section": "Cypress",
-            "question": "What is Cypress?",
-            "answer": "Cypress is a front-end testing framework built for modern web applications, offering end-to-end testing, integration testing, and unit testing."
-        },
-        {
-            "section": "Cypress",
-            "question": "What makes Cypress unique for testing?",
-            "answer": "Cypress offers real-time reloads, time-travel debugging, and automatic waiting, which simplify writing and debugging tests for front-end applications."
-        },
-        {
-            "section": "Cypress",
-            "question": "What is the purpose of fixtures in Cypress?",
-            "answer": "Fixtures in Cypress are external files used to hold mock data that can be loaded into tests, helping simulate different test scenarios."
-        },
-        {
-            "section": "Cypress",
-            "question": "How does Cypress handle asynchronous operations?",
-            "answer": "Cypress automatically waits for asynchronous operations, like API requests or DOM updates, eliminating the need for manual waits in tests."
-        },
-        {
-            "section": "Cypress",
-            "question": "What is Cypress Test Runner?",
-            "answer": "The Cypress Test Runner is a visual tool that allows you to watch tests run in real-time, providing insight into each command's behavior during execution."
-        },
-
-        # Java
-        {
-            "section": "Java",
-            "question": "What is Java?",
-            "answer": "Java is a high-level, object-oriented programming language known for its portability, robustness, and wide use in enterprise and mobile applications."
-        },
-        {
-            "section": "Java",
-            "question": "What are Java classes and objects?",
-            "answer": "Classes in Java are blueprints for objects, defining their properties and behaviors, while objects are instances created from classes."
-        },
-        {
-            "section": "Java",
-            "question": "What is inheritance in Java?",
-            "answer": "Inheritance is a feature in Java that allows one class to inherit fields and methods from another class, promoting code reuse and organization."
-        },
-        {
-            "section": "Java",
-            "question": "What is the purpose of the 'final' keyword in Java?",
-            "answer": "The 'final' keyword in Java can make variables constant, prevent method overriding, and prevent inheritance for classes, ensuring immutability."
-        },
-        {
-            "section": "Java",
-            "question": "What is a Java interface?",
-            "answer": "An interface in Java is an abstract type used to specify a set of methods that a class must implement, enabling multiple inheritance and abstraction."
-        },
-
-        # Spring Boot
-        {
-            "section": "Spring Boot",
-            "question": "What is Spring Boot?",
-            "answer": "Spring Boot is a framework for building Java applications with minimal configuration, using pre-built defaults to simplify Spring-based development."
-        },
-        {
-            "section": "Spring Boot",
-            "question": "What are Spring Boot starters?",
-            "answer": "Starters are dependency packages in Spring Boot that simplify adding specific functionality, such as web development, database access, and testing."
-        },
-        {
-            "section": "Spring Boot",
-            "question": "What is Spring Boot autoconfiguration?",
-            "answer": "Autoconfiguration in Spring Boot automatically configures beans based on the project's dependencies, reducing the need for explicit configuration."
-        },
-        {
-            "section": "Spring Boot",
-            "question": "What is Spring Boot's Actuator?",
-            "answer": "Spring Boot Actuator provides tools for monitoring and managing applications in production, including health checks and metric endpoints."
-        },
-        {
-            "section": "Spring Boot",
-            "question": "What is the purpose of Spring Boot profiles?",
-            "answer": "Spring Boot profiles allow managing different configurations for different environments, such as development, testing, and production."
-        },
-
-        # MongoDB
-        {
-            "section": "MongoDB",
-            "question": "What is MongoDB?",
-            "answer": "MongoDB is a NoSQL, document-oriented database known for its scalability and flexibility, commonly used to store semi-structured data."
-        },
-        {
-            "section": "MongoDB",
-            "question": "What is a document in MongoDB?",
-            "answer": "A document in MongoDB is a record stored in BSON format, containing fields and values, similar to JSON objects, and can be nested."
-        },
-        {
-            "section": "MongoDB",
-            "question": "What is a MongoDB collection?",
-            "answer": "A collection in MongoDB is a group of documents, akin to a table in relational databases, but it does not enforce a schema for its documents."
-        },
-        {
-            "section": "MongoDB",
-            "question": "What is sharding in MongoDB?",
-            "answer": "Sharding is a method for distributing data across multiple servers in MongoDB, allowing for horizontal scaling of large datasets."
-        },
-        {
-            "section": "MongoDB",
-            "question": "What is MongoDB aggregation?",
-            "answer": "Aggregation in MongoDB processes data records and returns computed results, often used for analytics, similar to SQL's GROUP BY."
-        },
-
-        # PostgreSQL
-        {
-            "section": "PostgreSQL",
-            "question": "What is PostgreSQL?",
-            "answer": "PostgreSQL is an open-source, relational database system known for its robustness, extensibility, and support for complex queries."
-        },
-        {
-            "section": "PostgreSQL",
-            "question": "What are PostgreSQL indexes?",
-            "answer": "Indexes in PostgreSQL are used to speed up data retrieval operations by creating a lookup structure for rows, reducing query time."
-        },
-        {
-            "section": "PostgreSQL",
-            "question": "What is a PostgreSQL schema?",
-            "answer": "A schema in PostgreSQL is a logical container for database objects, such as tables, functions, and views, organizing them within a database."
-        },
-        {
-            "section": "PostgreSQL",
-            "question": "What is a primary key in PostgreSQL?",
-            "answer": "A primary key is a unique identifier for rows in a PostgreSQL table, ensuring each row has a unique, non-null value in the key column."
-        },
-        {
-            "section": "PostgreSQL",
-            "question": "What are PostgreSQL transactions?",
-            "answer": "Transactions in PostgreSQL group SQL operations into a single, atomic unit, ensuring all or none of the changes are applied to the database."
-        },
-
-        # AWS
-        {
-            "section": "AWS",
-            "question": "What is AWS?",
-            "answer": "AWS (Amazon Web Services) is a cloud platform offering computing power, storage, and various tools to build and manage applications in the cloud."
-        },
-        {
-            "section": "AWS",
-            "question": "What is Amazon S3?",
-            "answer": "Amazon S3 (Simple Storage Service) is a scalable storage service for storing and retrieving large volumes of data and files in AWS."
-        },
-        {
-            "section": "AWS",
-            "question": "What is EC2 in AWS?",
-            "answer": "Amazon EC2 (Elastic Compute Cloud) provides scalable virtual servers for running applications on the AWS cloud."
-        },
-        {
-            "section": "AWS",
-            "question": "What is an Amazon RDS?",
-            "answer": "Amazon RDS (Relational Database Service) simplifies setting up, operating, and scaling relational databases in the cloud with automated maintenance."
-        },
-        {
-            "section": "AWS",
-            "question": "What is Amazon Lambda?",
-            "answer": "AWS Lambda is a serverless computing service that automatically manages the infrastructure, allowing users to run code in response to events without managing servers."
-        },
-
-        # Azure
-        {
-            "section": "Azure",
-            "question": "What is Microsoft Azure?",
-            "answer": "Microsoft Azure is a cloud computing platform offering a wide array of services including compute, analytics, storage, and networking."
-        },
-        {
-            "section": "Azure",
-            "question": "What is Azure Virtual Machines?",
-            "answer": "Azure Virtual Machines provide scalable, on-demand computing resources on the Azure cloud, similar to physical computers but fully virtualized."
-        },
-        {
-            "section": "Azure",
-            "question": "What is Azure Blob Storage?",
-            "answer": "Azure Blob Storage is a service for storing large amounts of unstructured data, such as text or binary data, commonly used for backups and media storage."
-        },
-        {
-            "section": "Azure",
-            "question": "What is Azure Kubernetes Service (AKS)?",
-            "answer": "Azure Kubernetes Service (AKS) is a managed Kubernetes service that simplifies deploying, managing, and scaling containerized applications in Azure."
-        },
-        {
-            "section": "Azure",
-            "question": "What is Azure Active Directory?",
-            "answer": "Azure Active Directory (Azure AD) is an identity and access management service for securely managing access to Azure resources, applications, and services."
-        }
-    ])
+    ]
 
     # Create DataFrame
     df = pd.DataFrame(data)
@@ -571,7 +903,6 @@ def insert_interview_questions():
 # Call the function to execute insertion
 #insert_interview_questions()
 
-import chromadb
 
 def fetch_questions_by_keyword(keyword: str):
     # Initialize ChromaDB client
@@ -591,4 +922,23 @@ def fetch_questions_by_keyword(keyword: str):
         print("No questions found for the given keyword.")
 
 # Example usage
-fetch_questions_by_keyword("AWS")
+fetch_questions_by_keyword("python")
+
+
+def count_unique_sections():
+    # Initialize ChromaDB client
+    client = chromadb.PersistentClient("vectorstore")
+    collection = client.get_collection(name="interview_questions")
+
+    # Fetch all metadata from the collection
+    all_documents = collection.get(include=["metadatas"])
+
+    # Extract sections from metadata
+    sections = [metadata["Section"] for metadata in all_documents["metadatas"]]
+
+    # Count unique sections
+    unique_sections = set(sections)
+    print(f"Total unique sections: {len(unique_sections)}")
+    print(f"Sections: {unique_sections}")
+
+#count_unique_sections()
