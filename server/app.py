@@ -14,7 +14,6 @@ import jwt
 import os
 import glob
 import re
-from job_matcher import format_json, generate_interview_questions
 from generateResume import enhance_all_descriptions, generate_latex, convert_latex_to_pdf
 from flashCards import FlashcardSystem
 from experience_scraper import get_interview_insights
@@ -37,6 +36,53 @@ llm = ChatGroq(
 
 if not os.path.exists('resumes'):
     os.makedirs('resumes')
+
+    
+def format_json(data):
+    result = []
+    for key, value in data.items():
+        if isinstance(value, list):
+            result.append(f"{key.capitalize()}:")
+            for item in value:
+                result.append(f"  - {item}")
+        else:
+            result.append(f"{key.capitalize()}: {value}")
+    return "\n".join(result)
+
+def generate_interview_questions(job_posting, resume, num_questions=5):
+    prompt = PromptTemplate.from_template(
+        """
+        ### Job Posting:
+        {job_posting}
+
+        ### Candidate's Resume:
+        {resume}
+
+        ### Instruction:
+        Based on the job posting and the candidate's resume, generate {num_questions} interview questions that:
+        1. Assess the candidate's fit for the specific role
+        2. Evaluate their relevant skills and experience
+        3. Explore any potential gaps between the job requirements and the candidate's background
+        4. Probe for examples of past work or projects related to the job
+        5. Gauge the candidate's interest and understanding of the company/role
+
+        Return the questions in a JSON format with keys 'question1', 'question2', etc.
+
+        ### Questions:
+        """
+    )
+
+    chain = prompt | llm | JsonOutputParser()
+    questions = chain.invoke(
+        input={
+            "job_posting": job_posting,
+            "resume": resume,
+            "num_questions": num_questions,
+        }
+    )
+
+    return list(questions.values())
+
 
 class User(db.Model):
     __tablename__ = 'users'

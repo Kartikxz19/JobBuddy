@@ -14,14 +14,11 @@ import urllib3
 from serpapi.google_search import GoogleSearch
 from langchain.document_loaders import WebBaseLoader
 
-
 llm = ChatGroq(
     model="llama-3.1-70b-versatile",
     temperature=0,
     groq_api_key=os.getenv("GROQ_API_KEY"),
 )
-
-
 
 http = urllib3.PoolManager(
     cert_reqs="CERT_REQUIRED",

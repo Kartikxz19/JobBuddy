@@ -167,11 +167,11 @@ fun App() {
         snackbarHost = { SnackbarHost(hostState = snackBarHostState) }) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = if (isLoggedIn) {
-                AppRoutes.HomeScreen
-            } else {
-                AppRoutes.LoginScreen
-            },
+//            startDestination = if (isLoggedIn) {
+                AppRoutes.HomeScreen,
+//            } else {
+//                AppRoutes.LoginScreen
+//            },
             modifier = Modifier.Companion
                 .fillMaxSize()
                 .padding(paddingValues)
