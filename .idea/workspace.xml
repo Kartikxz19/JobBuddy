@@ -5,9 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bdf10a02-8337-47aa-a6b3-e4b7640fb7db" name="Changes" comment="Stage 2 interview voice based completed">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/JBDatabase.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/entity/Converters.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/entity/FlashCard.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/entity/StudyPlan.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/entity/toJobPosting.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/dto/JobPosting.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/dto/JobPosting.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/dto/ResumeScoreResponse.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/dto/ResumeScoreResponse.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/Dao.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/JBDao.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/entity/Job.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/local/entity/Job.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/remote/APIRoutes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/remote/APIRoutes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/remote/JobBuddyAPI.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/remote/JobBuddyAPI.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/remote/JobBuddyAPIImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/data/remote/JobBuddyAPIImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/App.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/AppRoutes.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/AppRoutes.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/home/HomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/home/HomeScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/home/UploadFileViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/home/UploadFileViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/jobdetails/JobDetailsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/jobdetails/JobDetailsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/jobdetails/JobDetailsScreenState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/jobdetails/JobDetailsScreenState.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/jobdetails/JobDetailsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/jobdetails/JobDetailsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/EditUserDetailsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/EditUserDetailsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/InputModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/InputModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/InputType.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/InputType.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/ProfileUpdateScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/com/jainhardik120/jobbuddy/ui/presentation/screens/profileupdate/ProfileUpdateScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/experience_scraper.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/experience_scraper.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +61,7 @@
     "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
     "Python.generateResume.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Merging main",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "X:/Code/python/JobBuddy/server/resumes",
     "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
